@@ -24,7 +24,7 @@ def run():
 
     with langfuse.start_as_current_observation(name="stock-research", input=inputs):
         try:
-            response = crew.kickoff(inputs=inputs).raw
+            response = crew.kickoff(inputs=inputs).json
             print(response)
             langfuse.update_current_span(output=response)
         except Exception as e:

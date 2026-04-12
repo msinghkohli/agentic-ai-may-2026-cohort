@@ -26,6 +26,8 @@ When crafting your own prompts, use the **RACE framework** as a guide:
 - **Weaker**: Make a picture of a dog
 - **Stronger**: You are an expert graphic designer. Generate a photorealistic image of a golden retriever puppy. The puppy should be sitting in a sunny, green field filled with wildflowers. The lighting should be warm, late-afternoon sun (golden hour), creating soft shadows. The image should be from a low angle, in the style of professional nature photography, with a shallow depth of field, making the background slightly blurry.
 
+---
+
 ## Explore These Additional Prompting Techniques
 
 The [Prompting Guide](https://www.promptingguide.ai/) is a great reference. Have a read through these three techniques and try them out:

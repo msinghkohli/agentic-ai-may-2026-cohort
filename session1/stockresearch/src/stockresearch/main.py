@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from stockresearch.crew import crew
 from langfuse import get_client
 from openinference.instrumentation.crewai import CrewAIInstrumentor
+import asyncio
 
 load_dotenv()
 
@@ -17,7 +18,7 @@ else:
     print("Authentication failed. Please check your credentials and host.")
 CrewAIInstrumentor().instrument(skip_dep_check=True)
 
-def run():
+async def main():    
     inputs = {
         'user_query': "Compare Google's current stock price to last month's price."
     }
@@ -31,3 +32,6 @@ def run():
             raise Exception(f"An error occurred while running the crew: {e}")
         finally:
             langfuse.flush()
+
+if __name__ == "__main__":
+    asyncio.run(main())

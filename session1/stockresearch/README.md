@@ -76,13 +76,12 @@ Modify `src/stockresearch/main.py` to add custom inputs for the crew
 To kickstart your crew of AI agents and begin task execution, run this from the root folder of your project:
 
 ```bash
-$ crewai run
+$ uv run python -m src.stockresearch.main
 ```
 
 This command initializes the stockResearch Crew, assembling the agent and assigning it tasks as defined.
 
 This example, unmodified, will run the create a structure report on the user query.
-
 
 
 ## Observing the ReAct Cycle in Langfuse

@@ -54,7 +54,7 @@ stock_researcher = Agent(
         "developments on a stock. Known for your ability to find the most relevant "
         "information and present it in a clear and concise manner."
     ),
-    llm=LLM(model=os.environ["MODEL_ID"]),
+    llm=LLM(model=os.environ["LARGE_MODEL_ID"]),
     tools=[GetCurrentDateTool(), SerperDevTool()]
 )
 
@@ -75,16 +75,6 @@ research_task = Task(
     agent=stock_researcher
 )
 
-report_creator = Agent(
-    role="Senior Report Creator",
-    goal="Creates a report based on the desired report structure",
-    backstory=(
-        "You're a seasoned report creator with a knack for creating well structured report "
-        "based on the provided unstructured report and the final report structure."
-    ),
-    llm=LLM(model=os.environ["MODEL_ID"])
-)
-
 format_task = Task(
     description=(
         "Using the research findings provided, format the data into the required JSON schema.\n"
@@ -92,14 +82,12 @@ format_task = Task(
     ),
     expected_output="A JSON object matching the StockResearchOutput schema.",
     output_json=StockResearchOutput,
-    agent=report_creator,
+    agent=stock_researcher,
     context=[research_task]
 )
 
 crew = Crew(
-    agents=[stock_researcher, report_creator],
+    agents=[stock_researcher],
     tasks=[research_task, format_task],
-    verbose=True,
-    planning=True,
-    planning_llm=LLM(model=os.environ["PLANNING_MODEL_ID"])
+    verbose=True
 )

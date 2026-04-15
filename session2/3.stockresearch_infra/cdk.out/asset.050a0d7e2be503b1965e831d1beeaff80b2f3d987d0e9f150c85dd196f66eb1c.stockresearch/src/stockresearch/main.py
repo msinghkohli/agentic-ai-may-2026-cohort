@@ -35,11 +35,12 @@ CrewAIInstrumentor().instrument()
 # CrewAI 0.186+ uses provider-native SDKs (e.g. AnthropicCompletion) and
 # bypasses litellm entirely, so litellm instrumentation has no effect.
 # The event bus is the only reliable hook into LLM calls at this version.
-from . llm_otel_listener import LLMOtelListener
+from stockresearch.llm_otel_listener import LLMOtelListener
 
 LLMOtelListener()
 
-from . crewWithPlanner import crew
+from stockresearch.crewWithPlanner import crew
+
 
 async def main():
     tracer = otel_trace.get_tracer("stockresearch")

@@ -1,10 +1,42 @@
 import os
 from crewai import Agent, Crew, Task, LLM
+from crewai.agents.crew_agent_executor import CrewAgentExecutor
+from crewai.llms.providers.bedrock.completion import BedrockCompletion
 from pydantic import BaseModel, Field
 from crewai_tools import SerperDevTool
-from . tools.date_tool import GetCurrentDateTool
-from . import bedrock_patches  # noqa: F401 — applies Bedrock monkey-patches on import
+from stockresearch.tools.date_tool import GetCurrentDateTool
 
+# Some Bedrock-hosted models reject the stopSequences field.
+# Patch _get_inference_config to strip it out before the boto3 converse call.
+_orig_get_inference_config = BedrockCompletion._get_inference_config
+
+def _get_inference_config_no_stop(self):
+    config = _orig_get_inference_config(self)
+    config.pop("stopSequences", None)
+    return config
+
+BedrockCompletion._get_inference_config = _get_inference_config_no_stop
+
+# CrewAI 1.14.x bug: _parse_native_tool_call uses `func_info.get("arguments", "{}")`
+# which defaults to the non-empty string "{}" when the Bedrock response has no
+# "function" wrapper. That truthy default short-circuits the `or` so the actual
+# `input` dict from the Bedrock toolUse block is never read → empty args {} → validation error.
+_orig_parse = CrewAgentExecutor._parse_native_tool_call
+
+def _parse_native_tool_call_fixed(self, tool_call):
+    if isinstance(tool_call, dict) and "input" in tool_call and "function" not in tool_call:
+        from crewai.utilities.agent_utils import sanitize_tool_name
+        call_id = (
+            tool_call.get("id")
+            or tool_call.get("toolUseId")
+            or f"call_{id(tool_call)}"
+        )
+        func_name = sanitize_tool_name(tool_call.get("name", ""))
+        func_args = tool_call.get("input", {})
+        return call_id, func_name, func_args
+    return _orig_parse(self, tool_call)
+
+CrewAgentExecutor._parse_native_tool_call = _parse_native_tool_call_fixed
 
 class StockResearchOutput(BaseModel):
     old_price: float = Field(description="Stock price at the start")

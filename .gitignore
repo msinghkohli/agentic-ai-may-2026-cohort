@@ -27,6 +27,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 requirements.txt
+cdk.out/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

@@ -99,4 +99,25 @@ In the Langfuse trace view you will see each LLM call, tool invocation, and inte
 
 ## Understanding Your Crew
 
-The stockResearch Crew is composed of a single AI agent with a defined role, goal, and tools. The agent is configured directly in `crew.py`. It executes tasks based on the stock specified in your query, researching and analyzing that specific company to produce its output.
+Three crew configurations are available, each defined in its own file:
+
+| Crew | File | Description |
+|------|------|-------------|
+| Single Agent | `crew.py` | One agent handles all research and reporting tasks end-to-end. |
+| Multi-Agent | `crewMultiAgent.py` | Multiple specialized agents collaborate — e.g. a researcher and a report writer — passing results between them. |
+| Multi-Agent with Planner | `crewWithPlanner.py` | Adds a planning step before execution. A planning LLM decomposes the goal into a step-by-step plan, then delegates to the agents. Best for complex or open-ended queries. |
+
+To switch between crews, update the import at the top of [src/stockresearch/main.py](src/stockresearch/main.py):
+
+```python
+# Single agent crew
+from . crew import crew
+
+# Multi-agent crew
+from . crewMultiAgent import crew
+
+# Multi-agent crew with planning
+from . crewWithPlanner import crew
+```
+
+Only one import should be active at a time. Comment out or remove the others.

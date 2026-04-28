@@ -5,17 +5,18 @@ description = "Jira management agent using crewAI"
 authors = [{ name = "Your Name", email = "you@example.com" }]
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "crewai[anthropic,tools]>=0.130.0",
+    "crewai[anthropic,mcp,tools]>=0.130.0",
     "langfuse>=3.5.0",
     "openinference-instrumentation-crewai>=0.1.13",
     "openinference-instrumentation-litellm",
     "opentelemetry-exporter-otlp-proto-http",
     "openlit",
-    "crewai-tools",
+    "crewai-tools[mcp]",
     "litellm",
     "opentelemetry-api",
     "opentelemetry-exporter-otlp",
     "opentelemetry-sdk",
+    "mcp>=1.26.0",
 ]
 
 [project.scripts]

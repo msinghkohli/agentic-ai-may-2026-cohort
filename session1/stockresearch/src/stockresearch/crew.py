@@ -1,17 +1,7 @@
 import os
 from crewai import Agent, Crew, Task, LLM
-from pydantic import BaseModel, Field
 from crewai_tools import SerperDevTool
 from stockresearch.tools.date_tool import GetCurrentDateTool
-
-
-class StockResearchOutput(BaseModel):
-    old_price: float = Field(description="Stock price at the start")
-    new_price: float = Field(description="Stock price at the end")
-    percent_change: float = Field(description="Percentage change")
-    potential_reason: str = Field(description="Brief explanation of what drove the price change")
-    days_between: int = Field(description="Number of days between old price and new price")
-    stock_ticker: str = Field(description="The stock ticker symbol, e.g. AAPL, as asked by user")
 
 stock_researcher = Agent(
     role="Senior Stock Researcher",
@@ -42,19 +32,8 @@ research_task = Task(
     agent=stock_researcher
 )
 
-format_task = Task(
-    description=(
-        "Using the research findings provided, format the data into the required JSON schema.\n"
-        "Do not perform any new research — only structure what was already found."
-    ),
-    expected_output="A JSON object matching the StockResearchOutput schema.",
-    output_json=StockResearchOutput,
-    agent=stock_researcher,
-    context=[research_task]
-)
-
 crew = Crew(
     agents=[stock_researcher],
-    tasks=[research_task, format_task],
-    verbose=True,
+    tasks=[research_task],
+    verbose=True
 )

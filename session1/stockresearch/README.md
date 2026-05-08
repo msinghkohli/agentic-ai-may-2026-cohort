@@ -4,7 +4,7 @@
 
 Welcome to the Stockresearch Crew project, powered by [crewAI](https://crewai.com). 
 
-This project uses a single-agent AI crew to automate stock research. Given a stock ticker or company name, the crew researches the company, analyzes relevant financial and market data, and produces a structured research report. It is intended as a starting point for building AI-powered investment research workflows using crewAI.
+This project uses a single-agent AI crew to automate stock research. Given a stock ticker or company name, the crew researches the company, analyzes relevant financial and market data, and produces a research report. It is intended as a starting point for building AI-powered investment research workflows using crewAI.
 
 
 ## Installation
@@ -81,7 +81,7 @@ $ uv run python -m src.stockresearch.main
 
 This command initializes the stockResearch Crew, assembling the agent and assigning it tasks as defined.
 
-This example, unmodified, will run the create a structure report on the user query.
+This example, unmodified, will run the create a report on the user query.
 
 
 ## Observing the ReAct Cycle in Langfuse

@@ -51,7 +51,7 @@ async def main():
     with tracer.start_as_current_span("stock-research") as span:
         try:
             span.set_attribute("input", str(inputs))
-            response = crew.kickoff(inputs=inputs).json
+            response = crew.kickoff(inputs=inputs).raw
             print(response)
             span.set_attribute("output", str(response or ""))
         except Exception as e:

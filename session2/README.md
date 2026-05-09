@@ -1,16 +1,35 @@
-# Session 2 — Assignments
+# Session 2
 
-## Assignment 1: Stock Research Crew Variants
+## Supporting Material
+1. **Python** — A quick introduction to Python for those new to the language
 
-**Project:** [1.stockresearch/](1.stockresearch/)
+   [![Python Bascis for Beginners](https://img.youtube.com/vi/Ro_MScTDfU4/0.jpg)](https://www.youtube.com/watch?v=Ro_MScTDfU4)
+   [![Python Class Methods](https://img.youtube.com/vi/g-qRKZD3FgE/0.jpg)](https://www.youtube.com/watch?v=g-qRKZD3FgE)
+   [![What is UV](https://img.youtube.com/vi/5rTwOt9Qgik/0.jpg)](https://www.youtube.com/watch?v=5rTwOt9Qgik)
+
+2. **CrewAI** — How to orchestrate multiple AI agents using the CrewAI framework
+
+   - [CrewAI Introduction](https://docs.crewai.com/en/introduction)
+   - [Installation](https://docs.crewai.com/en/installation)
+   - [Build Your First Crew](https://docs.crewai.com/en/guides/crews/first-crew)
+
+3. **Langfuse** — How to trace and observe LLM calls and agent reasoning with Langfuse
+
+   - [Langfuse Observability Overview](https://langfuse.com/docs/observability/overview)
+
+## Assignments
+
+### Assignment 1: Stock Research Crew Variants
+
+**Project:** [2.stockresearch_multi_agent/](2.stockresearch_multi_agent/)
 
 The stock research project ships three crew configurations. Your assignment is to run all three and compare their behaviour.
 
-### Tasks
+#### Tasks
 
-1. Follow the [installation and configuration steps](1.stockresearch/README.md#installation) to set up your `.env` file with a model, Serper, and Langfuse keys.
+1. Follow the [installation and configuration steps](1.stockresearch_multi_agent/README.md#installation) to set up your `.env` file with a model, Serper, and Langfuse keys.
 
-2. Run the **single agent crew** by updating the import in [src/stockresearch/main.py](1.stockresearch/src/stockresearch/main.py):
+2. Run the **single agent crew** by updating the import in [src/stockresearch_multi_agent/main.py](2.stockresearch_multi_agent/src/stockresearch_multi_agent/main.py):
    ```python
    from . crew import crew
    ```
@@ -38,7 +57,7 @@ The stock research project ships three crew configurations. Your assignment is t
 
 ## Assignment 2: Deep Research Variants
 
-**Project:** [2.deepresearch/](2.deepresearch/)
+**Project:** [3.deepresearch/](3.deepresearch/)
 
 The deep research project implements two orchestration patterns for a planner → researcher → writer → critic pipeline. Your assignment is to run both and understand how control flow differs.
 
@@ -70,13 +89,13 @@ The deep research project implements two orchestration patterns for a planner �
 
 ## Assignment 3: Deploy Stock Research to AgentCore
 
-**Project:** [3.stockresearch_infra/](3.stockresearch_infra/)
+**Project:** [4.stockresearch_infra/](4.stockresearch_infra/)
 
 Your assignment is to package the stock research agent as a Docker container and deploy it to Amazon Bedrock AgentCore Runtime using CDK.
 
 ### Tasks
 
-1. Ensure you have the [prerequisites](3.stockresearch_infra/README.md#prerequisites) installed: AWS CLI, CDK v2, UV, and Docker.
+1. Ensure you have the [prerequisites](4.stockresearch_infra/README.md#prerequisites) installed: AWS CLI, CDK v2, UV, and Docker.
 
 2. Make sure `../1.stockresearch/.env` exists and contains a valid `SERPER_API_KEY` — the CDK stack reads it directly.
 

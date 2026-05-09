@@ -1,6 +1,6 @@
 # Prompt Engineering
 
-This is a hands-on exploration of the prompting techniques covered in the session. Pick any LLM powered application you like — ChatGPT, Gemini, Claude, or anything else — and try these out at your own pace.
+This is a hands-on exploration of the prompting techniques covered in the session. Pick any LLM powered agentic AI application you like — ChatGPT, Gemini, Claude, or anything else — and try these out at your own pace.
 
 
 ---

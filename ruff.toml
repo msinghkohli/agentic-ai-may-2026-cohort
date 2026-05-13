@@ -1,0 +1,14 @@
+# A shared ruff configuration for all projects in the workspace.
+# Ruff will look for this file when linting the subprojects.
+
+line-length = 88
+
+[lint]
+# Enable Pyflakes (F) and pycodestyle (E, W), which includes checking for unused imports (F401).
+# I (isort) is used for organizing imports.
+select = ["E", "F", "W", "I"]
+ignore = []
+
+# Allow autofix for all enabled rules (when `--fix` is provided or on save).
+fixable = ["ALL"]
+unfixable = []

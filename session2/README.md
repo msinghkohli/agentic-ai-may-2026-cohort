@@ -21,7 +21,7 @@
 
 ## Assignments
 
-### Assignment 1: Stock Research
+## Assignment 1: Stock Research
 
 **Project:** [1.stockresearch/](1.stockresearch/)
 

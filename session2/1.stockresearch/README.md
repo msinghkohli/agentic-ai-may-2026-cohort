@@ -33,9 +33,12 @@ cp .env.template .env
 
 Then configure the following keys in your `.env` file:
 
-**Model setup** — set `MODEL_ID` to the model you want to use, and provide the corresponding API key:
+**Model setup** — set `MODEL_ID` to the model you want to use, and provide the corresponding API key (in case you are not using AWS Bedrock hosted models).
 
 ```env
+# Example: AWS Bedrock
+MODEL_ID=bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0
+
 # Example: Anthropic
 MODEL_ID=anthropic/claude-sonnet-4-6
 ANTHROPIC_API_KEY=your_anthropic_api_key
@@ -44,6 +47,14 @@ ANTHROPIC_API_KEY=your_anthropic_api_key
 MODEL_ID=openai/gpt-4o
 OPENAI_API_KEY=your_openai_api_key
 ```
+
+If you are using AWS Bedrock hosted models, you need to install and configure the AWS CLI by following the [official AWS CLI installation guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html). Once installed, run:
+
+```bash
+aws configure
+```
+
+You'll be prompted for your AWS Access Key ID, Secret Access Key, default region (`us-east-1`), and output format (`json`).
 
 **Tavily** — used by the agent to search the web for stock data:
 
@@ -68,9 +79,6 @@ To get your Langfuse keys:
 3. ***Create a project*** — inside your organization, create a new project (e.g. `stockresearch`); each project has its own set of API keys and trace history
 4. ***Get your API keys*** — go to **Project Settings → API Keys** and create a new key pair; copy the public and secret keys into your `.env` file
 
-**User Query** - customizing the user query:
-The execution script now interactively prompts you for a query. Simply type your query when prompted in the terminal.
-
 ## Running the Project
 
 To kickstart your crew of AI agents and begin task execution, run one of the crew scripts from the root folder of your project:
@@ -82,8 +90,9 @@ $ uv run python -m src.stockresearch.crew_v3
 
 This command initializes the stockResearch Crew, assembling the agent(s) and assigning them tasks as defined.
 
-The script will prompt you in the terminal for a user query.
-
+The script will prompt you in the terminal for a user query. Below are example queries:
+1. Compare Google's (GOOGL) current stock price to its price exactly one month ago. 
+2. What is the impact of AI on the stock prices?
 
 ## Observing the ReAct Cycle in Langfuse
 
@@ -98,6 +107,18 @@ The agent follows a **ReAct** (Reason + Act) loop:
 
 In the Langfuse trace view you will see each LLM call, tool invocation, and intermediate output as a separate span. This makes it easy to understand how the agent arrived at its answer and where time or tokens were spent.
 
-## Understanding Your Crew
+## Crew Versions
 
-The stockResearch Crew is composed of AI agents with defined roles, goals, and tools. The agents are configured in `crew_v1.py`, `crew_v2.py`, and `crew_v3.py`. They execute tasks based on the stock specified in your interactive query, researching and analyzing that specific company to produce their output.
+This project includes three different versions of the crew to demonstrate the evolution of agentic architectures:
+
+| Version | Architecture | Agents | Description |
+| :--- | :--- | :--- | :--- |
+| **V1** | **Single Agent** | Generalist Agent | A simple setup that uses a generalist agent to answer broad queries using web search. Best for general information. |
+| **V2** | **Single Agent** | Senior Financial Research Analyst | Focused specifically on financial data. It uses specialized tools to fetch stock prices and is prompted to output data in structured markdown tables. |
+| **V3** | **Hierarchical** | Manager, Financial Analyst, Generalist | The advanced version. A **Manager Agent** receives the user query, analyzes the intent, and delegates the task to either the Financial Analyst (for stocks) or the Generalist (for broad topics). |
+
+### Key Differences
+- **Autonomy**: V1 and V2 are straightforward executions. V3 introduces a "Manager" that makes decisions about who should handle the work.
+- **Specialization**: V2 and V3 introduce a specialized Financial Analyst agent with custom tools for stock data, whereas V1 is a "jack of all trades".
+- **Complexity**: V3 demonstrates **hierarchical process** and **agent delegation**, allowing for more robust handling of diverse user queries.
+

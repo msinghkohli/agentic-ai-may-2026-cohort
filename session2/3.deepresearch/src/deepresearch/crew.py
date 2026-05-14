@@ -1,10 +1,11 @@
-import asyncio
+import asyncio  # noqa: I001
 import os
+
+from .utils.crew_executor import execute_crew
 
 from crewai import LLM, Agent, Crew, Process, Task
 from crewai_tools import TavilyExtractorTool, TavilySearchTool
-
-from .utils.crew_executor import execute_crew
+from .utils import bedrock_patches  # noqa: F401 — applies Bedrock monkey-patches on import
 
 deep_research_planner = Agent(
     role="Deep Research Planner",

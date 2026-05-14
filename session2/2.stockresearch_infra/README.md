@@ -48,16 +48,16 @@ uv sync
 
 ## Configuration
 
-The stack reads `SERPER_API_KEY` directly from the sibling project's `.env` file at `../1.stockresearch/.env`. Make sure that file exists and contains the key before deploying:
+The stack reads `TAVILY_API_KEY` directly from the sibling project's `.env` file at `../1.stockresearch/.env`. Make sure that file exists and contains the key before deploying:
 
 ```env
-SERPER_API_KEY=your_serper_api_key
+TAVILY_API_KEY=your_tavily_api_key
 ```
 
 The container is configured to use the following model by default (set in `src/AgentCoreStack.py`):
 
 ```
-LARGE_MODEL_ID=bedrock/us.anthropic.claude-sonnet-4-6
+MODEL_ID=bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0
 ```
 
 ## Deploying

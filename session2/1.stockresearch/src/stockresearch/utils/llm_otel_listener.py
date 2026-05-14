@@ -15,8 +15,6 @@ _OBSERVATION_TYPE = "langfuse.observation.type"
 _OBSERVATION_INPUT = "langfuse.observation.input"
 _OBSERVATION_OUTPUT = "langfuse.observation.output"
 _OBSERVATION_MODEL = "langfuse.observation.model.name"
-_OBSERVATION_USAGE_INPUT_TOKENS = "langfuse.observation.usage_details.inputTokens"
-_OBSERVATION_USAGE_OUTPUT_TOKENS = "langfuse.observation.usage_details.outputTokens"
 
 # Internal event metadata fields — not useful as span attributes
 _SKIP_FIELDS = {

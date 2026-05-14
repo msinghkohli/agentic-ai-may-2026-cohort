@@ -211,7 +211,7 @@ class AgentCoreStack(Stack):
                 "OTEL_TRACES_SAMPLER": "always_on",
                 "OTEL_LOG_LEVEL": "debug",
                 "TAVILY_API_KEY": _tavily_api_key,
-                "MODEL_ID": "bedrock/us.anthropic.claude-sonnet-4-6",
+                "MODEL_ID": "bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0",
             },
             network_configuration=bedrockagentcore.CfnRuntime.NetworkConfigurationProperty(
                 network_mode="PUBLIC"

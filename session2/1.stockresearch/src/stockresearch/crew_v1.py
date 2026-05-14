@@ -1,11 +1,15 @@
-import asyncio
+import asyncio  # noqa: I001
 import os
+
+from .utils.crew_executor import execute_crew
 
 from crewai import LLM, Agent, Crew, Task
 from crewai_tools import TavilySearchTool
 
 from .tools.date_tool import GetCurrentDateTool
-from .utils.crew_executor import execute_crew
+from .utils import (
+    bedrock_patches,  # noqa: F401 — applies Bedrock monkey-patches on import
+)
 
 generalist_agent = Agent(
     role="Generalist Agent",

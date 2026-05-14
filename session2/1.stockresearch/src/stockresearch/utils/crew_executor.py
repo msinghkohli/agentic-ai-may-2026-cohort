@@ -4,16 +4,12 @@ import os
 import warnings
 
 from dotenv import load_dotenv
-from openinference.instrumentation.crewai import CrewAIInstrumentor
 from opentelemetry import trace as otel_trace
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from rich.console import Console
 from rich.markdown import Markdown
-
-from . import bedrock_patches  # noqa: F401 — applies Bedrock monkey-patches on import
-from .llm_otel_listener import LLMOtelListener
 
 load_dotenv()
 warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
@@ -35,8 +31,12 @@ if os.getenv("LANGFUSE_PUBLIC_KEY"):
     provider.add_span_processor(BatchSpanProcessor(exporter))
     otel_trace.set_tracer_provider(provider)
 
+    from openinference.instrumentation.crewai import CrewAIInstrumentor
+
     # Instrument CrewAI orchestration spans (agents, tasks, crew)
     CrewAIInstrumentor().instrument()
+
+    from .llm_otel_listener import LLMOtelListener
 
     # Subscribe to CrewAI's event bus to create OTEL spans for LLM calls.
     # CrewAI 0.186+ uses provider-native SDKs (e.g. AnthropicCompletion) and

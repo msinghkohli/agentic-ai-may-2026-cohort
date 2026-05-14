@@ -11,4 +11,4 @@ ignore = []
 
 # Allow autofix for all enabled rules (when `--fix` is provided or on save).
 fixable = ["ALL"]
-unfixable = []
+unfixable = ["I"]

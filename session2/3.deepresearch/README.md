@@ -33,19 +33,30 @@ cp .env.template .env
 
 Then configure the following keys in your `.env` file:
 
-**Model setup** — set `LARGE_MODEL_ID` to the model you want to use, and provide the corresponding API key:
+**Model setup** — set `MODEL_ID` to the model you want to use, and provide the corresponding API key (in case you are not using AWS Bedrock hosted models).
 
 ```env
+# Example: AWS Bedrock
+MODEL_ID=bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0
+
 # Example: Anthropic
-LARGE_MODEL_ID=anthropic/claude-sonnet-4-6
+MODEL_ID=anthropic/claude-sonnet-4-6
 ANTHROPIC_API_KEY=your_anthropic_api_key
 
 # Example: OpenAI
-LARGE_MODEL_ID=openai/gpt-4o
+MODEL_ID=openai/gpt-4o
 OPENAI_API_KEY=your_openai_api_key
 ```
 
-**Tavily** — used by agents to search the web and extract URL content:
+If you are using AWS Bedrock hosted models, you need to install and configure the AWS CLI by following the [official AWS CLI installation guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html). Once installed, run:
+
+```bash
+aws configure
+```
+
+You'll be prompted for your AWS Access Key ID, Secret Access Key, default region (`us-east-1`), and output format (`json`).
+
+**Tavily** — used by the agent to search the web for stock data:
 
 ```env
 TAVILY_API_KEY=your_tavily_api_key
@@ -68,21 +79,15 @@ To get your Langfuse keys:
 3. ***Create a project*** — inside your organization, create a new project (e.g. `deepresearch`); each project has its own set of API keys and trace history
 4. ***Get your API keys*** — go to **Project Settings → API Keys** and create a new key pair; copy the public and secret keys into your `.env` file
 
-**User Query** - customizing the user query:
-Modify `src/deepresearch/main.py` to set the research topic
-
 ## Running the Project
 
 To kickstart your crew of AI agents and begin task execution, run this from the root folder of your project:
 
 ```bash
-$ uv run python -m src.deepresearch.main
+$ uv run python -m src.deepresearch.crew
 ```
 
-This command initializes the Deep Research crew, assembles the agents, and executes the research pipeline.
-
-This example, unmodified, will produce a structured research article on the configured query.
-
+This command initializes the Deep Research crew, assembles the agents, and executes the research pipeline. Once asked, you may mention the topic you would like the agent to perform deep research on. It will take around 10 minutes to produce a structured research article on the asked query.
 
 ## Observing the ReAct Cycle in Langfuse
 
@@ -101,23 +106,3 @@ In the Langfuse trace view you will see each LLM call, tool invocation, and inte
 
 The Deep Research crew uses four specialist agents — a **Planner**, **Researcher**, **Writer**, and **Critic** — that collaborate to produce a cited research article with a built-in revision loop.
 
-### Crew Variants
-
-Two orchestration patterns are available, each defined in its own file:
-
-| Pattern | File | Description |
-|---------|------|-------------|
-| Hierarchical Crew | `crew.py` | A manager agent dynamically delegates each step (planning, research, writing, critique) to the right specialist. The control flow is determined at runtime by the manager LLM. |
-| Fixed Flow | `flow.py` | A `DeepResearchFlow` with explicit, hard-coded steps: plan → research (parallel per sub-question) → write → critique → route (approve or revise). Control flow is defined in code, not by an LLM. |
-
-To switch between patterns, update the active call in [src/deepresearch/main.py](src/deepresearch/main.py):
-
-```python
-# Hierarchical crew — manager LLM orchestrates all steps
-response = crew.kickoff(inputs=inputs).raw
-
-# Fixed flow — explicit pipeline with parallel research and revision loop
-response = await DeepResearchFlow().kickoff_async(inputs=inputs)
-```
-
-Only one call should be active at a time. Comment out or remove the other.

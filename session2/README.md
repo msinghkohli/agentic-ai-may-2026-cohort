@@ -27,13 +27,13 @@
 
 The stock research project ships three crew configurations. Your assignment is to run all three and compare their behaviour using Langfuse traces.
 
-## Assignment 2: Deploy Stock Research to AgentCore
+## Assignment 2: Deploy Stock Research to AgentCore (Will be open after instructor shares a video on AgentCore)
 
 **Project:** [2.stockresearch_infra/](2.stockresearch_infra/)
 
 Your assignment is to package the stock research agent as a Docker container and deploy it to Amazon Bedrock AgentCore Runtime using CDK.
 
-## Assignment 3: Deep Research
+## Assignment 3: Deep Research (Will be open after instructor shares a video on Deep Research)
 
 **Project:** [3.deepresearch/](3.deepresearch/)
 

@@ -4,7 +4,6 @@
 1. **Python** — A quick introduction to Python for those new to the language
 
    [![Python Bascis for Beginners](https://img.youtube.com/vi/Ro_MScTDfU4/0.jpg)](https://www.youtube.com/watch?v=Ro_MScTDfU4)
-   [![Python Class Methods](https://img.youtube.com/vi/g-qRKZD3FgE/0.jpg)](https://www.youtube.com/watch?v=g-qRKZD3FgE)
    [![What is UV](https://img.youtube.com/vi/5rTwOt9Qgik/0.jpg)](https://www.youtube.com/watch?v=5rTwOt9Qgik)
 
 2. **CrewAI** — How to orchestrate multiple AI agents using the CrewAI framework

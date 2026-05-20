@@ -26,7 +26,7 @@
 
 The stock research project ships three crew configurations. Your assignment is to run all three and compare their behaviour using Langfuse traces.
 
-## Assignment 2: Deploy Stock Research to AgentCore (Will be open after instructor shares a video on AgentCore)
+## Assignment 2: Deploy Stock Research to AgentCore
 
 **Project:** [2.stockresearch_infra/](2.stockresearch_infra/)
 

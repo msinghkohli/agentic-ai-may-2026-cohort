@@ -3,19 +3,21 @@ Monkey-patches for CrewAI + Bedrock compatibility.
 
 Import this module once before any CrewAI code runs to apply all patches.
 """
+
 from crewai.agents.crew_agent_executor import CrewAgentExecutor
 from crewai.llms.providers.bedrock.completion import BedrockCompletion
-
 
 # ── Patch 1 ──────────────────────────────────────────────────────────────────
 # Some Bedrock-hosted models reject the stopSequences field.
 # Strip it out before the boto3 converse call.
 _orig_get_inference_config = BedrockCompletion._get_inference_config
 
+
 def _get_inference_config_no_stop(self):
     config = _orig_get_inference_config(self)
     config.pop("stopSequences", None)
     return config
+
 
 BedrockCompletion._get_inference_config = _get_inference_config_no_stop
 
@@ -37,7 +39,12 @@ if hasattr(CrewAgentExecutor, "_parse_native_tool_call"):
     _orig_parse = CrewAgentExecutor._parse_native_tool_call
 
     def _strip_bedrock_quotes(value: str) -> str:
-        if isinstance(value, str) and len(value) >= 2 and value[0] == "'" and value[-1] == "'":
+        if (
+            isinstance(value, str)
+            and len(value) >= 2
+            and value[0] == "'"
+            and value[-1] == "'"
+        ):
             return value[1:-1]
         return value
 
@@ -46,6 +53,7 @@ if hasattr(CrewAgentExecutor, "_parse_native_tool_call"):
             # Case 1 — raw Bedrock toolUse block (no "function" wrapper)
             if "input" in tool_call and "function" not in tool_call:
                 from crewai.utilities.agent_utils import sanitize_tool_name
+
                 call_id = (
                     tool_call.get("id")
                     or tool_call.get("toolUseId")

@@ -32,7 +32,7 @@ The stock research project ships three crew configurations. Your assignment is t
 
 Your assignment is to package the stock research agent as a Docker container and deploy it to Amazon Bedrock AgentCore Runtime using CDK.
 
-## Assignment 3: Deep Research (Will be open after instructor shares a video on Deep Research)
+## Assignment 3: Deep Research
 
 **Project:** [3.deepresearch/](3.deepresearch/)
 

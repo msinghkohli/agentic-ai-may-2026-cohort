@@ -8,7 +8,7 @@ This project answers employee questions about company policies by querying an **
 
 ## How It Works
 
-1. An `employee_query` is passed as input (e.g. "How many sick leaves are allowed in a year?")
+1. The app starts and prompts you to type your question in the terminal
 2. The **HR Manager** agent uses the `BedrockKBRetrieverTool` to search the employee handbook stored in an Amazon Bedrock Knowledge Base
 3. The agent returns a polite, concise answer grounded in the retrieved policy content
 
@@ -41,10 +41,10 @@ Configure the following keys in your `.env` file:
 **Model** — the Bedrock model used by the HR Manager agent:
 
 ```env
-LARGE_MODEL_ID=bedrock/us.anthropic.claude-sonnet-4-6
+MODEL_ID=bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0
 ```
 
-**Amazon Bedrock Knowledge Base** — the ID of the KB containing the employee handbook:
+**Amazon Bedrock Knowledge Base** — the ID of the KB containing the employee handbook. This was created as per instructions provided in `1.knowledgebase` folder.
 
 ```env
 BEDROCK_KB_ID=your_bedrock_knowledge_base_id
@@ -52,13 +52,15 @@ BEDROCK_KB_ID=your_bedrock_knowledge_base_id
 
 Your AWS credentials must be configured in the environment (via `~/.aws/credentials`, IAM role, or environment variables) with permissions to invoke the Bedrock model and query the Knowledge Base.
 
-**Langfuse** — used for tracing and observability:
+**Langfuse** — used for tracing and observability (optional):
 
 ```env
 LANGFUSE_PUBLIC_KEY=your_langfuse_public_key
 LANGFUSE_SECRET_KEY=your_langfuse_secret_key
 LANGFUSE_BASE_URL=https://cloud.langfuse.com
 ```
+
+Langfuse tracing is only activated when `LANGFUSE_PUBLIC_KEY` is present in the environment. You can omit these keys to run without observability.
 
 To get your Langfuse keys:
 
@@ -67,19 +69,25 @@ To get your Langfuse keys:
 3. **Create a project** — create a new project (e.g. `employeepolicy`); each project has its own API keys
 4. **Get your API keys** — go to **Project Settings → API Keys** and copy the public and secret keys
 
-**Customizing the query** — modify the `inputs` dict in [src/employeepolicy/main.py](src/employeepolicy/main.py):
-
-```python
-inputs = {
-    'employee_query': "How many sick leaves are allowed in a year."
-}
-```
-
 ## Running the Project
 
 ```bash
-uv run python -m src.employeepolicy.main
+uv run python -m src.employeepolicy.crew
 ```
+
+The app will prompt you to type your question:
+
+```
+Welcome to the Employee Policy Chatbot.
+
+User: How many sick leaves are allowed in a year?
+```
+
+## Optional: Reranking
+
+`crew.py` includes a commented-out `BedrockKBRetrieverTool` configuration that enables reranking. Reranking improves retrieval quality by having a second model score and reorder retrieved chunks by relevance — useful when you want to cast a wide initial search net but only pass the most relevant chunks to the LLM.
+
+Uncomment the reranking block in [src/employeepolicy/crew.py](src/employeepolicy/crew.py) and set `modelArn` to a supported reranker in your region. See [Amazon Bedrock reranking docs](https://docs.aws.amazon.com/bedrock/latest/userguide/rerank-supported.html) for supported models and regions.
 
 ## Observing Traces in Langfuse
 

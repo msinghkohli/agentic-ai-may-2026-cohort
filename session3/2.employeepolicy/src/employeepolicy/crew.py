@@ -1,9 +1,10 @@
 import os
 import asyncio
+from .utils.crew_executor import execute_crew
+
 from crewai import Agent, Crew, Task, LLM
 from crewai_tools import BedrockKBRetrieverTool
 from .utils import bedrock_patches  # noqa: F401 — applies Bedrock monkey-patches on import
-from .utils.crew_executor import execute_crew
 
 hr_manager = Agent(
     role="HR Manager",
@@ -12,7 +13,7 @@ hr_manager = Agent(
         "You're a seasoned HR Manager. Known to politly reply to queries form the employees "
         "pertaining to the employee policies. You are also known to reply concisely."
     ),
-    llm=LLM(model=os.environ["MODEL_ID"]),
+    llm=LLM(model=os.environ["MODEL_ID"], temperature=0.0),
     tools=[
         BedrockKBRetrieverTool(
             knowledge_base_id=os.environ["BEDROCK_KB_ID"]

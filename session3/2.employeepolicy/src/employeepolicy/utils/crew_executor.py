@@ -46,7 +46,7 @@ if os.getenv("LANGFUSE_PUBLIC_KEY"):
 
 
 def execute_crew(crew):
-    tracer = otel_trace.get_tracer("employee-policy")
+    tracer = otel_trace.get_tracer("employeepolicy")
 
     console = Console()
     console.print(

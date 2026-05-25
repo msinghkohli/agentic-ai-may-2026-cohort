@@ -18,7 +18,7 @@ See the [full instructions](1.atlassian_mcp_server/README.md) to get started.
 
 **Project:** [2.jira_management/](2.jira_management/)
 
-Build a crewAI agent that reads a requirements input (plain text or a Confluence page URL) and automatically creates a structured epic with child tasks in a Jira project via the Atlassian MCP server. The agent applies judgment about when to add a design task and always inserts a security review task before QA.
+Build crewAI agents that read a requirements input (plain text or a Confluence page URL) and automatically create a structured epic with child tasks in a Jira project via the Atlassian MCP server. Two crew versions are provided so you can compare architectures.
 
 See the [full instructions](2.jira_management/README.md) to get started.
 
@@ -26,3 +26,4 @@ See the [full instructions](2.jira_management/README.md) to get started.
 
 - How does the agent decide whether a design task is needed? What part of the prompt drives that reasoning?
 - How many MCP tool calls did the agent make in a single run? How does observing this in Langfuse help you tune the agent?
+- What are the trade-offs between V1 (single agent, all tools) and V2 (hierarchical, scoped tools)?

@@ -2,17 +2,39 @@
 
 ## Purpose
 
-This project automates Jira project management using [crewAI](https://crewai.com). A single **Jira Project Manager** agent reads a requirements input (text or Confluence page URL), then creates a structured epic with child tasks in a specified Jira project via the **Atlassian MCP server**.
+This project automates Jira project management using [crewAI](https://crewai.com). Two crew versions are provided so you can compare single-agent versus hierarchical multi-agent architectures, both driven by the **Atlassian MCP server**.
 
-For enhancement requests the agent automatically:
+### V1 — Single Agent ([crew_v1.py](src/jiramanagement/crew_v1.py))
+
+A single generalist **Atlassian Assistant** with access to all Atlassian MCP tools runs sequentially to complete any Jira or Confluence task.
+
+### V2 — Hierarchical Multi-Agent ([crew_v2.py](src/jiramanagement/crew_v2.py))
+
+A **Jira Project Manager** orchestrates four specialist agents, each scoped to only the tools it needs (via `_filter_tools()` in [crew_v2.py](src/jiramanagement/crew_v2.py)):
+
+| Agent | Responsibility |
+|---|---|
+| Confluence Reader | Reads pages, spaces, and search results |
+| Confluence Manager | Creates and updates pages, adds comments |
+| Jira Issue Reader | Queries issues and projects via JQL |
+| Jira Issue Manager | Creates, updates, links, and transitions issues |
+
+> **Why scope tools per agent?** This is the [Principle of Least Privilege](https://arxiv.org/pdf/2512.11147) applied to agentic AI — each agent gets exactly what its role requires, nothing more.
+>
+> - **Reduced blast radius**: a compromised or misbehaving agent (e.g. via prompt injection) can only affect its narrow scope. A read-only agent cannot overwrite or delete data. [OWASP's Top 10 for LLMs](https://owasp.org/www-project-top-10-for-large-language-model-applications/) explicitly lists *Excessive Agency* as a top risk.
+> - **Better accuracy**: fewer tools in context means the LLM has less ambiguity when choosing which to call, reducing hallucinated or incorrect tool invocations.
+> - **Faster reasoning**: token budgets aren't spent on irrelevant tool descriptions, leaving more room for actual task reasoning.
+> - **Cleaner audits**: every action is traceable to an agent with a well-defined, bounded scope — easier to satisfy compliance and security review requirements.
+
+For enhancement requests the manager automatically:
 - Assesses whether a **design task** is needed (architectural changes, new integrations, significant UX work)
 - Always creates a **security review task** before QA
 
 ## How It Works
 
 1. A `jira_request` is passed as input describing what to create and in which project
-2. The **Jira Project Manager** agent connects to the Atlassian MCP server (`https://mcp.atlassian.com/v1/mcp`) and uses its Jira tools
-3. The agent creates an epic and all child tasks with correct dependencies, then returns a structured summary of everything created
+2. The crew connects to the Atlassian MCP server (`https://mcp.atlassian.com/v1/mcp`) using Basic Auth
+3. The agent(s) create an epic and all child tasks with correct dependencies, then return a structured summary of everything created
 
 ## Installation
 
@@ -43,7 +65,7 @@ Configure the following keys in your `.env` file:
 **Model** — the Bedrock model used by the Jira Project Manager agent:
 
 ```env
-LARGE_MODEL_ID=bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0
+MODEL_ID=bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0
 ```
 
 Your AWS credentials must be configured (via `~/.aws/credentials`, IAM role, or environment variables) with permissions to invoke the Bedrock model.
@@ -59,7 +81,7 @@ To get your Atlassian API token:
 1. Log in at [id.atlassian.com](https://id.atlassian.com/manage-profile/security/api-tokens)
 2. Click **Create API token with Scope**, give it a name, and copy the token
 
-**Langfuse** — used for tracing and observability:
+**Langfuse** (optional) — used for tracing and observability. Tracing is skipped if these keys are absent:
 
 ```env
 LANGFUSE_PUBLIC_KEY=your_langfuse_public_key
@@ -72,27 +94,39 @@ To get your Langfuse keys:
 2. Create or join an organization, then create a project
 3. Go to **Project Settings → API Keys** and copy the public and secret keys
 
-**Customizing the request** — modify the `inputs` dict in [src/jiramanagement/main.py](src/jiramanagement/main.py):
+**Submitting a request** — when you run either crew version the terminal will prompt you interactively:
 
-```python
-inputs = {
-    'jira_request': (
-        "I have a todo app. Based on the requirements confluence page create one epic in the project with the ID 'TIME' in the cloud ID: 'https://deeplenstech.atlassian.net'. Based on the requirements confluence page, also create tasks with the parent as the newly created epic. Task dependencies should be effectively set after the tasks have been created. Epic requirements confluence page: \n"
-        "https://deeplenstech.atlassian.net/wiki/spaces/~557058fd5ab0b1dd344900a0675e1db1567b47/pages/360449/Reminder+feature+in+my+ToDo+app \n"
-        "After you are done with the changes, update the confluence page and add a section containing a table of newly created jira issues along with their summary"
-    )
-}
+```
+Welcome to the Jira Management.
+
+User: <type your Jira/Confluence request here>
+```
+
+Example request:
+
+```
+I have a todo app. Based on the requirements confluence page create one epic in 
+the project with the ID 'TIME' in the cloud ID: 'https://deeplenstech.atlassian.net'. 
+Also create tasks with the parent as the newly created epic and set task dependencies 
+after the tasks have been created. 
+Epic requirements confluence page:
+'https://deeplenstech.atlassian.net/wiki/spaces/.../pages/360449/Reminder+feature+in+my+ToDo+app'. 
+After you are done, update the confluence page and add a table of newly created Jira issues. 
 ```
 
 ## Running the Project
 
 ```bash
-uv run python -m src.jiramanagement.main
+# V1 — single generalist agent
+uv run python -m src.jiramanagement.crew_v1
+
+# V2 — hierarchical multi-agent (recommended)
+uv run python -m src.jiramanagement.crew_v2
 ```
 
 ## Observing Traces in Langfuse
 
-Every run produces a full trace at [cloud.langfuse.com](https://cloud.langfuse.com).
+If `LANGFUSE_PUBLIC_KEY` is set, every run produces a full trace at [cloud.langfuse.com](https://cloud.langfuse.com).
 
 The agent follows a **ReAct** (Reason + Act) loop, calling Atlassian MCP tools repeatedly until all Jira items are created. Each LLM call is captured via a custom `LLMOtelListener` that hooks into CrewAI's event bus — necessary because CrewAI 0.186+ bypasses litellm and routes calls through provider-native SDKs directly.
 

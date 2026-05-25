@@ -1,8 +1,11 @@
+import asyncio
 import base64
 import os
+
+from .utils.crew_executor import execute_crew
 from crewai import Agent, Crew, Task, LLM, Process
 from crewai_tools import MCPServerAdapter
-from . import bedrock_patches  # noqa: F401 — applies Bedrock monkey-patches on import
+from .utils import bedrock_patches  # noqa: F401 — applies Bedrock monkey-patches on import
 
 def _filter_tools(all_tools, tool_names: set):
     return [t for t in all_tools if t.name in tool_names]
@@ -19,7 +22,7 @@ def create_crew():
     }
 
     all_tools = MCPServerAdapter(server_params).tools
-    llm = LLM(model=os.environ["LARGE_MODEL_ID"])
+    llm = LLM(model=os.environ["MODEL_ID"])
 
     confluence_reader = Agent(
         role="Confluence Reader",
@@ -174,3 +177,11 @@ def create_crew():
         process=Process.hierarchical,
         verbose=True,
     )
+
+
+async def run():
+    execute_crew(create_crew())
+
+
+if __name__ == "__main__":
+    asyncio.run(run())

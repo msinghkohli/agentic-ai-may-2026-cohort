@@ -122,10 +122,10 @@ def create_crew():
         allow_delegation=False,
     )
 
-    jira_manager = Agent(
-        role="Jira Project Manager",
+    project_manager = Agent(
+        role="Project Manager",
         goal=(
-            "Manage Jira projects by orchestrating specialised agents to create and organise epics, "
+            "Manage projects by orchestrating specialised agents to create and organise epics, "
             "tasks, and sub-tasks from requirements. Ensure proper dependency tracking, design phase "
             "checks for enhancements, and a security review task for every enhancement."
         ),
@@ -146,7 +146,8 @@ def create_crew():
             "task or question (a clear and specific request), and context (all background info the "
             "coworker needs to complete the request, such as URLs, issue IDs, and project keys)."
         ),
-        llm=llm,
+        llm=llm, 
+        # LLM(model=os.environ["LARGE_MODEL_ID"]),
         allow_delegation=True,
     )
 
@@ -173,7 +174,7 @@ def create_crew():
     return Crew(
         agents=[confluence_reader, confluence_manager, jira_issue_reader, jira_issue_manager],
         tasks=[jira_task],
-        manager_agent=jira_manager,
+        manager_agent=project_manager,
         process=Process.hierarchical,
         verbose=True,
     )

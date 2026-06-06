@@ -4,7 +4,7 @@
 
 ## Architecture Design
 
-During the group activity in this session, your cohort worked through one of three problem statements together. For this assignment, you can:
+During the group activity in this session, your group worked through one of three problem statements together. For this assignment, you can:
 
 - **Refine your group activity design** — take the architecture your group sketched out and develop it further on your own, or
 - **Pick a different problem statement** — choose one of the other projects from the list below and design an architecture for it from scratch.

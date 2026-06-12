@@ -40,7 +40,7 @@ class MemoryUtils:
         flattened_list = list(itertools.chain.from_iterable(turns))
         response = ""
         for item in flattened_list:
-            response += item['role'] + ": " + item['content']['text'] + "\n"
+            response += "\n" + item['role'] + ": " + item['content']['text'].replace("\n", " ") 
         return response
 
     def extractSummary(self) -> str:
@@ -56,8 +56,8 @@ class MemoryUtils:
         summary:List[str] = []
         for item in memory_records:
             if item['content'] and item['content']['text']:
-                summary.append(item['content']['text'])
-        response = ". ".join(summary)
+                summary.append(item['content']['text'].replace("\n", " "))
+        response = "\n".join(summary)
         return response
         
 

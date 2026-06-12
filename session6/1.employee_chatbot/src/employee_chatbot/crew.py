@@ -2,6 +2,7 @@ import os
 from crewai import Agent, Crew, Task, LLM
 from .tools import insert_leave, read_leaves, get_current_date
 from crewai_tools import BedrockKBRetrieverTool
+from .utils import bedrock_patches  # noqa: F401 — applies Bedrock monkey-patches on import
 
 def createCrew():
     kb_tool = BedrockKBRetrieverTool(knowledge_base_id=os.environ["BEDROCK_KB_ID"])

@@ -51,6 +51,6 @@ def createCrew():
     return Crew(
         agents=[employee_query_agent],
         tasks=[employee_query_task],
-        verbose=True
+        verbose=False
     )
 

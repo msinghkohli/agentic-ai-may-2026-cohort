@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import warnings
-import os
 import re
 from dotenv import load_dotenv
 

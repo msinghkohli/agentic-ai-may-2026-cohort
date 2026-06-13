@@ -33,7 +33,7 @@ def model_callback(input, turns: List[Turn], thread_id: str) -> Turn:
         memoryUtils = MemoryUtils(sessionId=session_id, actorId=employee_id)
 
         conversationHistory = memoryUtils.loadShortTermMemory()
-        conversationSummary = memoryUtils.extractSummary()
+        conversationSummary = memoryUtils.extractSummary(query=user_input)
 
         inputs = {
             'employee_query': user_input,

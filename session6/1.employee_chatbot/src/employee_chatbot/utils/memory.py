@@ -43,12 +43,12 @@ class MemoryUtils:
             response += "\n" + item['role'] + ": " + item['content']['text'].replace("\n", " ") 
         return response
 
-    def extractSummary(self) -> str:
+    def extractSummary(self, query:str="Conversation Summary") -> str:
         namespace = "/strategies/{memoryStrategyId}/actors/{actorId}/sessions/{sessionId}".format(memoryStrategyId=os.getenv("MEMORY_SUMMARY_STRATEGY_ID"), actorId=self.actorId, sessionId=self.sessionId)
         params = {
             "memory_id": os.getenv("MEMORY_ID"),
             "namespace": namespace,
-            "query": "Conversation Summary",
+            "query": query,
             "actor_id": self.actorId
         }
         memory_records = MemoryClient().retrieve_memories(**params)

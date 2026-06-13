@@ -47,7 +47,7 @@ def run():
 
             with trace(**trace_kwargs):
                 conversationHistory = memoryUtils.loadShortTermMemory()
-                conversationSummary = memoryUtils.extractSummary()
+                conversationSummary = memoryUtils.extractSummary(query=query)
                 inputs = {
                     'employee_query': query,
                     'employee_id': employee_id,

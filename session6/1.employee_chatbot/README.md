@@ -91,15 +91,12 @@ Configure the chatbot, interact with it across multiple turns, and observe the l
 
 ### Steps
 1.  **Setup Environment**: Fill in your `.env` file with all required keys (including the Memory IDs from Assignment 1).
-2.  **Configure Metric Collections** (Optional):
-    - To enable live evaluation of your traces and threads, create two **Metric Collections** in the Confident AI dashboard:
-      - **Trace Collection**: Used for single-turn evaluations (live traces).
-      - **Thread Collection**: Used for multi-turn evaluations (on session exit).
-    - Update your `.env` with the collection names:
-      ```env
-      DEEPEVAL_TRACE_METRIC_COLLECTION="your_trace_collection_name"  # For single-turn traces
-      DEEPEVAL_THREAD_METRIC_COLLECTION="your_thread_collection_name" # For multi-turn threads
-      ```
+2.  **Set Up Metric Collections & Evaluation Workflows** (in the Confident AI dashboard):
+    - **Create two metric collections** under **Metrics → Collections** ([Metric Collections docs](https://www.confident-ai.com/docs/metrics/metric-collections)):
+      - A **single-turn** collection (e.g. `Employee Chatbot Trace Metrics`) for evaluating individual traces.
+      - A **multi-turn** collection (e.g. `Employee Chatbot Thread Metrics`) for evaluating whole conversations.
+    - **Add a trace evaluation rule** so each new trace is scored automatically on arrival: go to **Workflows → Traces → Evaluation Rules → New rule**, set the **Data Model** to **Trace**, attach your **single-turn** collection, and toggle it **Enabled**. Trace rules fire at ingest on every incoming trace ([Workflows docs](https://www.confident-ai.com/docs/llm-tracing/workflows#evaluation-rules)).
+    - **Add a thread evaluation rule** so each conversation is scored once it is well-formed: go to **Workflows → Threads → Evaluation Rules → New rule**, attach your **multi-turn** collection, and toggle it **Enabled**. Thread rules fire after the thread has been idle for the configured time limit (default 300s), so evaluation triggers shortly after you type `Bye` ([Workflow docs](https://www.confident-ai.com/docs/llm-tracing/workflows#evaluation-rules)).
 3.  **Run the Chatbot**:
     ```bash
     uv run python -m src.employee_chatbot.main
@@ -111,7 +108,7 @@ Configure the chatbot, interact with it across multiple turns, and observe the l
     - Type `Bye` to exit and trigger thread-level evaluation.
 5.  **Observe**:
     - Login to [Confident AI](https://www.confident-ai.com/).
-    - Navigate to the **Project** and view the **Traces**.
+    - Navigate to the **Project** and view the **Traces** and the **Threads**.
     - Verify that tool calls are captured and metrics are calculated.
 
 ---
@@ -122,23 +119,29 @@ Configure the chatbot, interact with it across multiple turns, and observe the l
 Run automated offline tests to validate the chatbot's performance on single-turn and multi-turn goldens.
 
 ### Steps
-1.  **Setup Test Cases**:
-    - Before running the tests, make sure the deepeval test cases are setup by running. These would create golderns in Confident AI:
+
+1.  **Activate the Virtual Environment**:
+    - The `deepeval test run` command runs outside of `uv`, so activate the project's virtual environment first:
+      ```bash
+      source .venv/bin/activate
+      ```
+2.  **Setup Test Cases**:
+    - Before running the tests, make sure the deepeval test cases are setup by running. These would create goldens in Confident AI:
       ```bash
       uv run python test/setup_deepeval.py
       ```
-2.  **Single-Turn Tests**:
+3.  **Single-Turn Tests**:
     - Ensure you have a golden dataset named `"Employee Chatbot Goldens"` in Confident AI (or modify `test/test_chatbot.py` to match your dataset alias).
     - Run the tests:
       ```bash
       deepeval test run test/test_chatbot.py
       ```
-3.  **Multi-Turn Tests**:
+4.  **Multi-Turn Tests**:
     - Ensure you have a conversational golden dataset named `"Employee Chatbot Multi Turn Goldens"`.
     - Run the multi-turn simulation tests:
       ```bash
       deepeval test run test/test_multi_turn.py
       ```
-4.  **Verify Results**:
+5.  **Verify Results**:
     - Review the test results in the terminal.
     - Check the **Test Runs** section in Confident AI for detailed breakdowns of metric scores.

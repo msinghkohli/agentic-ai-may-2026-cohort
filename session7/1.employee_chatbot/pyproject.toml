@@ -19,6 +19,7 @@ dependencies = [
     "bedrock-agentcore>=1.8.0",
     "deepeval>=3.9.6",
     "deepteam>=1.0.6",
+    "cedarpy>=4.8.4",
 ]
 
 [project.scripts]

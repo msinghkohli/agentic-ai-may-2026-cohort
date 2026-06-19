@@ -278,6 +278,19 @@ wheels = [
 ]
 
 [[package]]
+name = "cedarpy"
+version = "4.8.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/c1/f5/7ab2cbf080253d81c9704a6ab04c3dc93759f0ae688b1e5e28ae8fdb2bf9/cedarpy-4.8.4.tar.gz", hash = "sha256:213ac129fe3b7f8aee437af656b1ecdab6c37414f9403ecaa47013b06574052a", size = 366525, upload-time = "2026-05-29T21:06:56.216Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a1/c0/3eb8ddc3a1276739230c3c3a08f1715b8f9f679c724146abd1102707c788/cedarpy-4.8.4-cp312-cp312-macosx_10_12_x86_64.whl", hash = "sha256:66eb6e0f651035deb76d24e4a340233128bf58976cdd5b4d35659d156fb93e06", size = 4045573, upload-time = "2026-05-29T21:06:51.959Z" },
+    { url = "https://files.pythonhosted.org/packages/87/ac/0df9a281f2add5554d15357e35bfbaf423c1bfc51f0738b1af32285353ad/cedarpy-4.8.4-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:1a7c89981f5bd8577fe5df8c2fc6ae711a04f5c1d4afa11a58ade18155902eed", size = 3932292, upload-time = "2026-05-29T21:06:46.404Z" },
+    { url = "https://files.pythonhosted.org/packages/df/8a/29b5922f61bd0d4190330f3840f39ad7436d661ac30f4704346fe7fb76ca/cedarpy-4.8.4-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:091c548a9ae732e380006f27aa1dd133fa25bd102d589151e25bc614f807fe89", size = 4361313, upload-time = "2026-05-29T21:06:25.038Z" },
+    { url = "https://files.pythonhosted.org/packages/3c/49/5f67f98ca97480d48a023d88f51f99f812c89f766752efbc18659ac01a69/cedarpy-4.8.4-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1c594f7ad27ef6caf76ea82171dce71c3344a9fae43f0e1a5e6a185824361bea", size = 4447422, upload-time = "2026-05-29T21:06:37.6Z" },
+    { url = "https://files.pythonhosted.org/packages/74/4b/9581c51e637885a23630b92c647ee79ce51f7ac7b417bdec589ddc1cf2ae/cedarpy-4.8.4-cp312-cp312-win_amd64.whl", hash = "sha256:1e072cf042d31229448133a9a6367c6427f2f009e355112bc3c49f1c0daaa284", size = 3841816, upload-time = "2026-05-29T21:07:00.398Z" },
+]
+
+[[package]]
 name = "certifi"
 version = "2026.4.22"
 source = { registry = "https://pypi.org/simple" }
@@ -644,6 +657,7 @@ source = { editable = "." }
 dependencies = [
     { name = "bedrock-agentcore" },
     { name = "boto3" },
+    { name = "cedarpy" },
     { name = "crewai", extra = ["anthropic", "tools"] },
     { name = "crewai-tools" },
     { name = "deepeval" },
@@ -662,6 +676,7 @@ dependencies = [
 requires-dist = [
     { name = "bedrock-agentcore", specifier = ">=1.8.0" },
     { name = "boto3" },
+    { name = "cedarpy", specifier = ">=4.8.4" },
     { name = "crewai", extras = ["anthropic", "tools"], specifier = ">=0.130.0" },
     { name = "crewai-tools" },
     { name = "deepeval", specifier = ">=3.9.6" },

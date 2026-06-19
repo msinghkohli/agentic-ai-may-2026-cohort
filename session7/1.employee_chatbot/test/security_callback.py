@@ -37,8 +37,7 @@ async def callback(input: str, turns: list[RTTurn] = None) -> RTTurn:
 
     inputs = {
         'employee_query': input,
-        'employee_id': employee_id,
-        'conversationHistory': history if history else "No prior conversation history"
+        'employee_id': employee_id
     }
     with ToolCallTracker() as tracker:
         console.print(Panel(input, title="[bold blue]🗣️ User Input[/bold blue]", border_style="blue"))
@@ -53,9 +52,8 @@ async def callback(input: str, turns: list[RTTurn] = None) -> RTTurn:
             response = crew.kickoff(inputs=inputs).raw
         elif agentVersion == "v3":
             flow = EmployeeChatbotFlow()
-            flow.state.employee_query = query
+            flow.state.employee_query = input
             flow.state.employee_id = employee_id
-            flow.state.conversationHistory = str(conversationHistory)
             flow.kickoff()
             response = flow.state.final_response
         console.print(Panel(response, title="[bold green]🤖 Assistant Output[/bold green]", border_style="green"))

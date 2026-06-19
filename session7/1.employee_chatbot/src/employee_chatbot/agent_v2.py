@@ -3,6 +3,7 @@ from crewai import Agent, Crew, Task, LLM
 from .utils import bedrock_patches  # noqa: F401 — applies Bedrock monkey-patches on import
 from .tools import InsertLeaveTool, ReadLeavesTool, GetCurrentDateTool
 from .utils.llmHooks import LLMHooks
+from .utils.toolHooks import ToolHooks
 from .utils.memory import MemoryUtils
 from crewai_tools import BedrockKBRetrieverTool
 from crewai.utilities.i18n import I18N
@@ -37,6 +38,10 @@ def createCrew(memory: MemoryUtils = None):
     # Registers guardrail hooks (always) and memory hooks (when memory given),
     # with guardrails applied before memory.
     LLMHooks(memory).register()
+    # Registers the before_tool_call authorization hook (v2 only): employees
+    # may only read/apply leaves for themselves. Backend (in-code or Cedar) is
+    # chosen by the AUTHZ_PROVIDER env var.
+    ToolHooks().register()
     kb_tool = BedrockKBRetrieverTool(knowledge_base_id=os.environ["BEDROCK_KB_ID"])
     
     employee_query_agent = Agent(
@@ -48,7 +53,6 @@ def createCrew(memory: MemoryUtils = None):
             "   1. Information about company policies (e.g., leave policy, work hours). \n"
             "   2. Requesting leave (e.g., 'I want to take leave on [date(s)]'). \n" 
             "   3. Query about leaves already availed (e.g., 'How many leaves have I taken?').  \n\n"
-            ""
             " System Constraints: \n"
             "1. Employee should not be able to apply for leaves for another employee or ask to check leave status for another"
             "employee, refuse politely and inform them that you can only access leave information for the "

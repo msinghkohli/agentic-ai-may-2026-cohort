@@ -47,6 +47,18 @@ class RouteResponse(BaseModel):
     leave_request: Optional[LeaveRequest] = Field(None, description="Populated if the request is leave-related.")
     policy_request: Optional[PolicyRequest] = Field(None, description="Populated if the request is policy-related.")
 
+    @model_validator(mode="before")
+    @classmethod
+    def coerce_string_nulls(cls, data):
+        """Some models emit the literal string 'null' for unused optional
+        nested fields instead of real null. Coerce those to None before
+        Pydantic validates the nested models."""
+        if isinstance(data, dict):
+            for key in ("leave_request", "policy_request"):
+                if isinstance(data.get(key), str) and data[key].strip().lower() in ("null", "none", ""):
+                    data[key] = None
+        return data
+
 # --- Flow State ---
 
 class EmployeeFlowState(BaseModel):
@@ -66,16 +78,8 @@ class EmployeeChatbotFlow(Flow[EmployeeFlowState]):
 
     @start()
     def classify_and_route(self):
-        # This flow has been only tested with anthropic models. Hence making
-        # anthropic model check mandatory.
-        if (os.getenv("ANTHROPIC_API_KEY") is None):
-            print("Please set the ANTHROPIC_API_KEY environment variable")
-            return
         model_id = os.getenv("MODEL_ID")
-        if model_id is None or not model_id.startswith("anthropic"):
-            print("Please set the MODEL_ID environment variable to an anthropic model")
-            return
-
+        
         """First step: Use a Router Agent to classify the intent and extract data."""
         router_agent = Agent(
             role="Query Router",
@@ -95,6 +99,8 @@ class EmployeeChatbotFlow(Flow[EmployeeFlowState]):
                 "If it is for applying leaves intent will be LEAVE_MANAGEMENT, and leave_intent will be APPLY. You will extract other details like dates and leave type.\n"
                 "If it's for fetching leaves, intent will be LEAVE_MANAGEMENT, and leave_intent will be FETCH. No other details will need to be extracted in that case.\n"
                 "If it's policy-related in general or even related to leave policy, extract the exact query and intent will be POLICY_ACCESS.\n\n"
+                "Only populate the sub-object that matches the intent: set leave_request for LEAVE_MANAGEMENT, "
+                "or policy_request for POLICY_ACCESS. Omit the field that does not apply entirely (do not output the string \"null\").\n\n"
                 "EMPLOYEE QUERY: {employee_query} \n"
             ),
             expected_output="A structured RouteResponse object containing the classified intent and extracted parameters.",

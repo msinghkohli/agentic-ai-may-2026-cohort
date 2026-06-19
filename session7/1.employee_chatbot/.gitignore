@@ -2,7 +2,7 @@
 __pycache__/
 .DS_Store
 .deepeval/
-leaves.db
+leaves.db*
 .vscode/
 redteam_results.json
 .deepteam/

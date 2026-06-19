@@ -4,8 +4,6 @@ from typing import Type, Optional
 import sqlite3
 from datetime import datetime, timedelta
 from enum import Enum
-from .utils.session import Session
-import os
 
 class LeaveType(str, Enum):
     EARNED_LEAVE = "earned leave"
@@ -42,8 +40,6 @@ class InsertLeaveTool(BaseTool):
     args_schema: Type[BaseModel] = InsertLeaveInput
 
     def _run(self, employee_id: str, leave_type: LeaveType, start_date: str, end_date: str, reason: Optional[str] = None) -> str:
-        if (os.getenv("AGENT_VERSION") != "v1" and employee_id != Session().getEmployeeId()):
-            raise Exception("Access Denied Error: You can only apply for your own leaves.")
         try:
             start = datetime.strptime(start_date, "%Y-%m-%d")
             end = datetime.strptime(end_date, "%Y-%m-%d")
@@ -76,8 +72,6 @@ class ReadLeavesTool(BaseTool):
     args_schema: Type[BaseModel] = ReadLeavesInput
 
     def _run(self, employee_id: str) -> str:
-        if (os.getenv("AGENT_VERSION") != "v1" and employee_id != Session().getEmployeeId()):
-            raise Exception("Access Denied Error: You can only access your own leaves")
         _init_db()
         
         twelve_months_ago = (datetime.now() - timedelta(days=366)).strftime("%Y-%m-%d")

@@ -57,9 +57,6 @@ def apply_guardrail_filters(text: str, source: str = "INPUT") -> tuple[str, bool
 
             # Check assessments to distinguish between Masking and Blocking
             is_blocked = _is_policy_blocked(response)
-            
-            log_action = "BLOCKED" if is_blocked else "MASKED"
-            logger.warning(f"Guardrail {log_action} {source} content: {processed_text}")
 
         return processed_text, is_blocked
 

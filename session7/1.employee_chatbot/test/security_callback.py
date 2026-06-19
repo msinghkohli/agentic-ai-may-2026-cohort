@@ -17,7 +17,6 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-from src.employee_chatbot.agent_v3 import EmployeeChatbotFlow
 from src.employee_chatbot.agent_v1 import createCrew as create_crew_v1
 from src.employee_chatbot.agent_v2 import createCrew as create_crew_v2
 from test.utils.tool_tracker import ToolCallTracker
@@ -50,12 +49,6 @@ async def callback(input: str, turns: list[RTTurn] = None) -> RTTurn:
         elif agentVersion == "v2":
             crew = create_crew_v2()
             response = crew.kickoff(inputs=inputs).raw
-        elif agentVersion == "v3":
-            flow = EmployeeChatbotFlow()
-            flow.state.employee_query = input
-            flow.state.employee_id = employee_id
-            flow.kickoff()
-            response = flow.state.final_response
         console.print(Panel(response, title="[bold green]🤖 Assistant Output[/bold green]", border_style="green"))
         
         return RTTurn(

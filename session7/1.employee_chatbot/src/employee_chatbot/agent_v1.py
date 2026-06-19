@@ -2,11 +2,14 @@ import os
 from crewai import Agent, Crew, Task, LLM
 from .utils import bedrock_patches  # noqa: F401 — applies Bedrock monkey-patches on import
 from .tools import InsertLeaveTool, ReadLeavesTool, GetCurrentDateTool
+from .utils.llmHooks import LLMHooks
+from .utils.memory import MemoryUtils
 from crewai_tools import BedrockKBRetrieverTool
-from deepeval.metrics import GEval
-from deepeval.test_case import LLMTestCaseParams
 
-def createCrew():
+def createCrew(memory: MemoryUtils = None):
+    # Register memory hooks only (guardrails disabled for v1).
+    LLMHooks(memory, enable_guardrails=False).register()
+    
     kb_tool = BedrockKBRetrieverTool(knowledge_base_id=os.environ["BEDROCK_KB_ID"])
     
     employee_query_agent = Agent(
@@ -38,10 +41,8 @@ def createCrew():
             "If the new leaves do not exceed the allowed leaves, inform the employee and insert the leaves. \n"
             "3. Query about leaves already availed (e.g., 'How many leaves have I taken?').  \n\n"
             "Employee ID: {employee_id} \n\n"
-            "EMPLOYEE QUERY: {employee_query} \n\n"
-            "CONVERSATION HISTORY in reverse chronological order: {conversationHistory} \n\n"
-            "Please note to use the conversation history to provide context aware responses.\n\n"
-        ),
+            "EMPLOYEE QUERY: {employee_query}"
+       ),
         expected_output=(
             "A crisp and concise answer to the employee query in plain text. The response should be "
             "empathetic, and polite irrespective of the frustration level of the employee"
@@ -52,6 +53,6 @@ def createCrew():
     return Crew(
         agents=[employee_query_agent],
         tasks=[employee_query_task],
-        verbose=True
+        verbose=False
     )
 

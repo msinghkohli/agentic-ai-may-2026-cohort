@@ -25,16 +25,19 @@ class LLMHooks:
 
     Guardrails are registered before memory so that the raw user input is
     validated *before* any conversation history is injected into the messages.
-    A `MemoryUtils` object is optional; when omitted, only the guardrail hooks
-    are registered.
+    A `MemoryUtils` object is optional; when omitted, no memory hooks are
+    registered. Guardrails are optional too: pass ``enable_guardrails=False`` to
+    skip them (e.g. for agents that should only get short-term memory).
     """
 
-    def __init__(self, memory: MemoryUtils = None):
+    def __init__(self, memory: MemoryUtils = None, enable_guardrails: bool = True):
         self.memory = memory
+        self.enable_guardrails = enable_guardrails
 
     def register(self):
-        """Register guardrail hooks first, then memory hooks."""
-        self._register_guardrails()
+        """Register guardrail hooks first (when enabled), then memory hooks."""
+        if self.enable_guardrails:
+            self._register_guardrails()
         self._register_memory()
 
     # ── Guardrails ────────────────────────────────────────────────────────────

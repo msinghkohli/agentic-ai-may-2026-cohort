@@ -8,6 +8,8 @@ from .tools import InsertLeaveTool, ReadLeavesTool, GetCurrentDateTool, LeaveTyp
 from crewai_tools import BedrockKBRetrieverTool
 from dotenv import load_dotenv
 from .utils import bedrock_patches  # noqa: F401
+from .utils.llmHooks import LLMHooks
+from .utils.memory import MemoryUtils
 
 load_dotenv()
 
@@ -50,14 +52,18 @@ class RouteResponse(BaseModel):
 class EmployeeFlowState(BaseModel):
     employee_query: str = ""
     employee_id: str = ""
-    conversationHistory: str = ""
     route_data: Optional[RouteResponse] = None
     final_response: str = ""
 
 # --- Flow Implementation ---
 
 class EmployeeChatbotFlow(Flow[EmployeeFlowState]):
-    
+
+    def __init__(self, memory: MemoryUtils = None, **kwargs):
+        super().__init__(**kwargs)
+        # Register memory hooks only (guardrails disabled for v3).
+        LLMHooks(memory, enable_guardrails=False).register()
+
     @start()
     def classify_and_route(self):
         # This flow has been only tested with anthropic models. Hence making
@@ -90,17 +96,15 @@ class EmployeeChatbotFlow(Flow[EmployeeFlowState]):
                 "If it's for fetching leaves, intent will be LEAVE_MANAGEMENT, and leave_intent will be FETCH. No other details will need to be extracted in that case.\n"
                 "If it's policy-related in general or even related to leave policy, extract the exact query and intent will be POLICY_ACCESS.\n\n"
                 "EMPLOYEE QUERY: {employee_query} \n"
-                "CONVERSATION HISTORY: {conversationHistory}"
             ),
             expected_output="A structured RouteResponse object containing the classified intent and extracted parameters.",
             agent=router_agent,
             output_pydantic=RouteResponse
         )
         
-        crew = Crew(agents=[router_agent], tasks=[router_task], verbose=True)
+        crew = Crew(agents=[router_agent], tasks=[router_task], verbose=False)
         result = crew.kickoff(inputs={
-            "employee_query": self.state.employee_query,
-            "conversationHistory": self.state.conversationHistory
+            "employee_query": self.state.employee_query
         })
         
         # print (result.raw)
@@ -153,7 +157,7 @@ class EmployeeChatbotFlow(Flow[EmployeeFlowState]):
             agent=leave_agent
         )
         
-        crew = Crew(agents=[leave_agent], tasks=[task], verbose=True)
+        crew = Crew(agents=[leave_agent], tasks=[task], verbose=False)
         result = crew.kickoff()
         self.state.final_response = result.raw
 
@@ -184,7 +188,7 @@ class EmployeeChatbotFlow(Flow[EmployeeFlowState]):
             agent=policy_agent
         )
         
-        crew = Crew(agents=[policy_agent], tasks=[task], verbose=True)
+        crew = Crew(agents=[policy_agent], tasks=[task], verbose=False)
         result = crew.kickoff()
         self.state.final_response = result.raw
 

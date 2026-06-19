@@ -5,8 +5,33 @@ from .tools import InsertLeaveTool, ReadLeavesTool, GetCurrentDateTool
 from .utils.llmHooks import LLMHooks
 from .utils.memory import MemoryUtils
 from crewai_tools import BedrockKBRetrieverTool
-from deepeval.metrics import GEval
-from deepeval.test_case import LLMTestCaseParams
+from crewai.utilities.i18n import I18N
+
+class NoExpectedOutputTask(Task):
+    """Task that omits the 'expected criteria for your final answer' section
+    from the generated prompt (CrewAI appends it even when expected_output is empty)."""
+
+    def prompt(self) -> str:
+        return self.description
+
+
+class CustomI18N(I18N):
+    """Overrides CrewAI prompt slices. The default `post_tool_reasoning` slice
+    is injected as a user-role message after every tool call and is flagged as a
+    prompt-injection by AWS Bedrock Guardrails, so we soften its wording here."""
+
+    _overrides = {
+        "post_tool_reasoning": (
+            "Please review the tool result and continue with the most "
+            "appropriate next step."
+        ),
+    }
+
+    def slice(self, slice: str) -> str:
+        if slice in self._overrides:
+            return self._overrides[slice]
+        return super().slice(slice)
+
 
 def createCrew(memory: MemoryUtils = None):
     # Registers guardrail hooks (always) and memory hooks (when memory given),
@@ -18,10 +43,13 @@ def createCrew(memory: MemoryUtils = None):
         role="HR & Leave Manager",
         goal="Answer queries on company policies, accept leave requests from employees, and provide information on leaves availed.",
         backstory=(
-            "You're a seasoned HR & Leave Manager. You politely reply to queries from employees "
-            "pertaining to employee policies. You also seamlessly handle leave applications, inserting them into "
-            "the database, and can quickly pull up records of how many leaves an employee has already taken."
-            "System Constraints: \n"
+            "You're a seasoned HR & Leave Manager. You politely reply to queries from employees. "
+            "You handle the following types of tasks from employees: \n"
+            "   1. Information about company policies (e.g., leave policy, work hours). \n"
+            "   2. Requesting leave (e.g., 'I want to take leave on [date(s)]'). \n" 
+            "   3. Query about leaves already availed (e.g., 'How many leaves have I taken?').  \n\n"
+            ""
+            " System Constraints: \n"
             "1. Employee should not be able to apply for leaves for another employee or ask to check leave status for another"
             "employee, refuse politely and inform them that you can only access leave information for the "
             "employee ID provided.\n"
@@ -33,9 +61,8 @@ def createCrew(memory: MemoryUtils = None):
             "exceed with the allowed leaves based on the leave type. If the new leaves exceed the allowed leaves, "
             "inform the employee and do not insert the leave. If the new leaves do not exceed the allowed leaves, "
             "inform the employee and insert the leaves. \n"
+            "Employee ID: {employee_id} \n\n"
         ),
-        # Guardrails are enforced via LLMHooks (see utils/llmHooks.py), which
-        # call apply_guardrail explicitly so blocks/masks are actually acted on.
         llm=LLM(
             model=os.environ["MODEL_ID"],
             temperature=0,
@@ -45,23 +72,15 @@ def createCrew(memory: MemoryUtils = None):
             InsertLeaveTool(),
             ReadLeavesTool(),
             GetCurrentDateTool()
-        ]
+        ],
+        i18n=CustomI18N()
     )
 
-    employee_query_task = Task(
+    employee_query_task = NoExpectedOutputTask(
         description=(
-            "Handle the following types of tasks from employees: \n"
-            "1. Information about company policies (e.g., leave policy, work hours). \n"
-            "2. Requesting leave (e.g., 'I want to take leave on [date(s)]'). \n" 
-            "3. Query about leaves already availed (e.g., 'How many leaves have I taken?').  \n\n"
-            "Employee ID: {employee_id} \n\n"
-            "EMPLOYEE QUERY: {employee_query} \n\n"
-            # "CONVERSATION HISTORY in reverse chronological order: {conversationHistory} \n\n"
-            # "Conversation history can be used to provide context aware responses.\n"
+            "{employee_query}"
         ),
-        expected_output=(
-            "A crisp and concise answer to the employee query"
-        ),
+        expected_output="",
         agent=employee_query_agent
     )
 

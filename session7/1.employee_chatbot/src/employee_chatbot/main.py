@@ -44,39 +44,36 @@ def run():
             }
 
             with trace(**trace_kwargs):
-                conversationHistory = memoryUtils.loadShortTermMemory()
-                print (conversationHistory)
-                conversationHistory = ""
                 inputs = {
                     'employee_query': query,
-                    'employee_id': employee_id,
-                    'conversationHistory': conversationHistory if conversationHistory else "No prior conversation history"
+                    'employee_id': employee_id
                 }
                 
                 agentVersion = os.getenv("AGENT_VERSION", "v1")
                 if agentVersion == "v1":
-                    crew = create_crew_v1()
+                    crew = create_crew_v1(memory=memoryUtils)
                     response = crew.kickoff(inputs=inputs).raw
                 elif agentVersion == "v2":
                     crew = create_crew_v2(memory=memoryUtils)
                     response = crew.kickoff(inputs=inputs).raw
                 elif agentVersion == "v3":
-                    flow = EmployeeChatbotFlow()
+                    flow = EmployeeChatbotFlow(memory=memoryUtils)
                     flow.state.employee_query = query
                     flow.state.employee_id = employee_id
-                    flow.state.conversationHistory = str(conversationHistory)
                     flow.kickoff()
                     response = flow.state.final_response    
                 
                 update_current_trace(output=response)
                 
+                # Save memory
                 memoryUtils.saveMemory(userPrompt=query, assistantResponse=response)
+                
                 console.print("\n[bold green]Chatbot:[/bold green]")
                 console.print(Markdown(response))
                 console.print("\n" + "-"*50 + "\n")
         except GuardrailBlockedError as e:
             # e.blocked_message holds the guardrail's configured block text.
-            console.print("\n[bold green]Chatbot:[/bold green]")
+            console.print("\n[bold red]Chatbot:[/bold red]")
             console.print(Markdown(e.blocked_message))
             console.print("\n" + "-"*50 + "\n")
         except Exception as e:

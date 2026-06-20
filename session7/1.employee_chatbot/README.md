@@ -46,6 +46,9 @@ cp .env.template .env
 | `MODEL_ID` | The Bedrock model ID (e.g., `bedrock/us.anthropic.claude-3-5-sonnet-20240620-v1:0`). |
 | `BEDROCK_KB_ID` | The ID of your Amazon Bedrock Knowledge Base (setup similarly to Session 3 assignments). |
 | `MEMORY_ID` | The AgentCore memory ID as configured in session 5 |
+| `AGENT_VERSION` | Selects which agent to run (`v1` unguarded baseline, `v2` mitigated, `v3` multi-agent flow). |
+| `AUTHZ_PROVIDER` | Authorization backend for the v2 tool hook: `cedar` (Cedar PolicySet) or `simple` (in-code, default). |
+| `GUARDRAIL_ID` / `GUARDRAIL_VERSION` | The AWS Bedrock Guardrail to apply (version defaults to `DRAFT`). See Assignment 3. |
     
 
 > [!NOTE]
@@ -109,60 +112,53 @@ AGENT_VERSION=v1 uv run python -m src.employee_chatbot.main
 
 ---
 
-## Assignment 2: Security Mitigation (Tool Checks & Prompt Constraints)
+## Assignment 2: Security Mitigation (Cedar Authorization, Guardrails & Prompt Constraints)
 
 ### Goal
-Verify how tool-level programmatic checks combined with system prompts protect **Agent v2** from the vulnerabilities found in Assignment 4.
+Verify how a centralized tool-authorization layer (Cedar policy or in-code), AWS Bedrock Guardrails (content filtering + PII masking), and system-prompt constraints together protect **Agent v2** from the vulnerabilities found in Assignment 1.
 
 ### Mitigation Architecture
-In [agent_v2.py](src/employee_chatbot/agent_v2.py), security is enforced at two levels:
+In [agent_v2.py](src/employee_chatbot/agent_v2.py), `createCrew()` wires up security as defence-in-depth across three layers, registered before the agent runs:
 
-1. **Tool-Level Programmatic Guards (Robust Defense)**:
-In [tools.py](src/employee_chatbot/tools.py), the `_run` methods of both [InsertLeaveTool](src/employee_chatbot/tools.py#L39-L67) and [ReadLeavesTool](src/employee_chatbot/tools.py#L73-L108) enforce programmatic checks using the active `Session().getEmployeeId()`:
+1. **Tool-Level Authorization via Cedar Policy (Robust Defense)**:
+Authorization is kept *out* of the tools — [tools.py](src/employee_chatbot/tools.py) contains pure data operations with **no inline ownership checks**. Instead, enforcement happens in a CrewAI `before_tool_call` hook registered by [ToolHooks](src/employee_chatbot/utils/toolHooks.py#L31-L74). For the guarded leave tools, the hook compares the authenticated `Session().getEmployeeId()` (the *principal*) against the `employee_id` argument (the *resource owner*) and **blocks the call by returning `False`** when they differ:
 ```python
-if (os.getenv("AGENT_VERSION") != "v1" and employee_id != Session().getEmployeeId()):
-    raise Exception("Access Denied Error: You can only access/apply for your own leaves.")
+@before_tool_call(tools=["read_leaves_availed", "insert_requested_leaves"])
+def authorize_leave_tool(context):
+    decision = self.authorizer.authorize(
+        principal=Session().getEmployeeId(),
+        action=TOOL_ACTIONS[context.tool_name],   # ReadLeaves / InsertLeave
+        resource_owner=context.tool_input.get("employee_id"),
+    )
+    return False if not decision.allowed else None   # False = deny, None = allow
 ```
-This ensures that even if the LLM is jailbroken or bypassed, the tool will refuse to fetch/insert data for any employee other than the authenticated session user.
+> [!IMPORTANT]
+> The hook **returns `False` to deny** rather than raising. CrewAI only blocks a tool when a `before_tool_call` hook returns `False`; if the hook *raises*, CrewAI catches and logs the exception and then **runs the tool anyway** — which would be a silent security bypass.
 
-2. **System Prompt Constraints (LLM-Level Defense)**:
-In [agent_v2.py](src/employee_chatbot/agent_v2.py#L30-L42), the agent's backstory is augmented with strict `System Constraints`:
+The actual allow/deny decision is delegated to a pluggable [Authorizer](src/employee_chatbot/utils/authz.py#L45-L53), selected by the `AUTHZ_PROVIDER` env var:
+- `AUTHZ_PROVIDER=cedar` → [CedarAuthorizer](src/employee_chatbot/utils/authz.py#L73-L127) evaluates the Cedar PolicySet in [policies/leaves.cedar](policies/leaves.cedar) via the `cedarpy` engine. The principal is modelled as `Employee::"<id>"` and the resource as `Leaves::"<owner>"`; the policy permits the action only `when { principal == resource.owner }`. The rule lives in policy text you can change without touching Python.
+- `AUTHZ_PROVIDER=simple` (default) → [SimpleAuthorizer](src/employee_chatbot/utils/authz.py#L56-L70) performs the equivalent ownership check in code.
+
+If `cedar` is requested but `cedarpy` or the policy file is unavailable, [get_authorizer()](src/employee_chatbot/utils/authz.py#L130-L145) logs and **falls back to the simple authorizer rather than failing open**.
+
+2. **AWS Bedrock Guardrails (Content & PII Defense)**:
+[LLMHooks](src/employee_chatbot/utils/llmHooks.py#L11-L41) registers `before_llm_call` / `after_llm_call` hooks that screen the user input and the model response against the configured AWS Bedrock Guardrail. Blocked content stops the call, and flagged-but-allowed PII is masked in place before it reaches the LLM or the database. See **[Setting up the Bedrock Guardrail](#setting-up-the-bedrock-guardrail)** below for configuration and a PII-masking walkthrough.
+
+3. **System Prompt Constraints (LLM-Level Defense)**:
+In [agent_v2.py](src/employee_chatbot/agent_v2.py#L56-L68), the agent's backstory is augmented with strict `System Constraints`:
 - Enforces that the employee cannot apply/check leaves for others.
 - Restricts policy exception overrides (refuse any exceptions to the allowed quota limits).
 - Details the sequence for quota checks.
 
-### Running Agent v2
-1. **Launch Agent v2**:
-Run the following command to interact with the mitigated agent:
-```bash
-AGENT_VERSION=v2 uv run python -m src.employee_chatbot.main
-```
+> [!NOTE]
+> The `before_tool_call` authorization hook is the *robust* control: it holds even if the LLM is jailbroken or the prompt constraints are bypassed. The system-prompt constraints are a softer, first-line defense that lets the agent refuse gracefully before a tool is ever invoked.
 
-2. **Test Mitigations**:
-- Try requesting leaves for `james_bond` when logged in as `john_doe`. Notice that the agent or the tool rejects the request with an access denied message.
-- Try applying for 13 earned leaves with the HR exception prompt. Notice that the agent politely refuses because exceptions cannot be provided.
-
-3. **Validate with DeepTeam**:
-Run the automated red-teaming test against v2 to verify full protection:
-```bash
-AGENT_VERSION=v2 deepteam run test/security_test_custom.yaml
-```
-
----
-
-## Assignment 3: AWS Bedrock Guardrails & PII Masking
-
-### Goal
-Configure **AWS Bedrock Guardrails** to intercept sensitive inputs, mask Personally Identifiable Information (PII), and enforce content filters.
-
-### Steps
+### Setting up the Bedrock Guardrail
 
 1. **Create and Configure a Bedrock Guardrail**:
 - Go to the **Amazon Bedrock Console**.
 - Navigate to **Guardrails** (under Build) and click **Create Guardrail**.
 - **Content Filters**: Configure the filters (Hate, Insults, Sexual, Violence) according to your preferences.
-    > [!WARNING]
-    > **Do not enable prompt injection filters** for this assignment. CrewAI injects internal system prompts and formatting instructions into the final LLM prompt, which triggers Bedrock's prompt injection filters as a false positive, causing the agent to get blocked.
 - **Sensitive Information Filters (PII)**: Add PII filters for fields like **Phone**, **Email**, **Address**, or **Name**. Set the action to **Mask** (which replaces the PII with tags like `[PHONE]`, `[EMAIL]`, etc.) or **Block** (which blocks the request entirely).
 - Save and create a new version of the guardrail. Note down the **Guardrail ID**.
 
@@ -172,25 +168,45 @@ Update your `.env` file with the **Guardrail ID** and **Version** (defaults to `
 GUARDRAIL_ID="your_guardrail_id"
 GUARDRAIL_VERSION="1" # or "DRAFT"
 ```
+If `GUARDRAIL_ID` is unset, the guardrail hooks become a no-op and the agent runs with authorization + prompt constraints only.
 
-3. **Examine Guardrail Hook Implementation**:
-Open [guardrailUtils.py](src/employee_chatbot/utils/guardrailUtils.py).
-- **Input Interception**: The function `register_guardrail_hooks()` registers a `@before_llm_call` hook. This hook scans the user's input using AWS Bedrock's `apply_guardrail` before it is dispatched to the LLM.
-    - If the guardrail action is `BLOCKED`, the hook returns `False` to prevent execution.
-    - If the action is `MASKED`, it updates `msg["content"]` with the masked text (e.g., replacing phone numbers with `[PHONE]`) so that the LLM never sees the sensitive raw PII.
-- **Output Interception**: The `@after_llm_call` hook is also defined (commented out by default) to illustrate how you can apply the same guardrails on the LLM's response before displaying it to the user.
+3. **How the Guardrail Hooks Work**:
+The screening logic lives in [guardrailUtils.py](src/employee_chatbot/utils/guardrailUtils.py) (`apply_guardrail_filters()` calls Bedrock's `apply_guardrail`), and the hooks are wired up by [LLMHooks](src/employee_chatbot/utils/llmHooks.py#L44-L94):
+- **Input Interception** (`before_llm_call`): scans each user message before it reaches the LLM. If the guardrail **BLOCKS**, the hook raises `GuardrailBlockedError` to stop the call; if it **MASKS**, it rewrites `msg["content"]` with the masked text (e.g. replacing phone numbers with `[PHONE]`) so the LLM never sees the raw PII.
+- **Output Interception** (`after_llm_call`): runs the same screening over the model's response before it is returned, blocking or masking as needed.
 
-4. **Verify Guardrail Behavior**:
-- Run the mitigated chatbot:
-    ```bash
-    AGENT_VERSION=v2 uv run python -m src.employee_chatbot.main
-    ```
-- Attempt to apply for a leave while including PII in the reason field:
+### Running Agent v2
+1. **Choose an authorization backend** (optional — defaults to `simple`):
+```bash
+# Use the Cedar policy engine
+export AUTHZ_PROVIDER=cedar
+# ...or the in-code check
+export AUTHZ_PROVIDER=simple
+```
+
+2. **Launch Agent v2**:
+Run the following command to interact with the mitigated agent:
+```bash
+AGENT_VERSION=v2 AUTHZ_PROVIDER=cedar uv run python -m src.employee_chatbot.main
+```
+
+3. **Test the Authorization & Prompt Constraints**:
+- Try requesting leaves for `james_bond` when logged in as `john_doe`. Notice that the `before_tool_call` hook blocks the tool and the agent reports it cannot complete the request (the authz reason is logged centrally and not leaked to the model/user).
+- Try applying for 13 earned leaves with the HR exception prompt. Notice that the agent politely refuses because exceptions cannot be provided.
+
+4. **Test the Guardrail / PII Masking**:
+- Apply for a leave while including PII in the reason field:
     > *"I want to take earned leave from 20th July to 22nd July. Reason: I need to visit the clinic. My private phone number is +1-555-0199 and my home address is 123 Main St, New York."*
 - Check the console logs. You will see that the PII was masked:
     > `Guardrail MASKED LLM prompt.`
+
     The database record will save the masked reason, ensuring no sensitive PII is permanently written to `leaves.db` or leaked to downstream model logs!
 
+5. **Validate with DeepTeam**:
+Run the automated red-teaming test against v2 to verify full protection:
+```bash
+AGENT_VERSION=v2 AUTHZ_PROVIDER=cedar deepteam run test/security_test_custom.yaml
+```
 
 --
 
@@ -239,12 +255,6 @@ Decomposing the agent and enforcing structured outputs provides a powerful, mult
 ---
 
 ### Running Agent v3
-
-> [!WARNING]
-> **Anthropic Direct API Requirement & Bedrock Compatibility**
-> Running Agent v3 **requires using the Anthropic model directly** (e.g., via the Anthropic API with `ANTHROPIC_API_KEY` set in your `.env` file, and `MODEL_ID` set to an Anthropic model like `anthropic/claude-sonnet-4-6`).
-> 
-> This is because of a compatibility limitation in CrewAI: CrewAI's structured JSON/Pydantic output parser has integration issues when extracting structured objects (like [RouteResponse](src/employee_chatbot/agent_v3.py#L39-L47)) from Anthropic models hosted on **Amazon Bedrock**. Using the direct Anthropic API bypasses this issue and allows the Query Router to correctly parse structured outputs.
 
 #### 1. Launch Agent v3 (Interactive CLI)
 You can run the interactive CLI with the `AGENT_VERSION=v3` environment variable:

@@ -1,0 +1,28 @@
+[project]
+name = "a2a_jira_support"
+version = "0.1.0"
+description = "A2A Jira and Support Agent with PageIndex RAG"
+authors = [{ name = "Your Name", email = "you@example.com" }]
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "crewai[a2a,bedrock,tools]>=0.130.0",
+    "pageindex-open",
+    "fastapi",
+    "uvicorn",
+    "streamlit",
+    "pypdf",
+    "deepeval",
+    "python-dotenv",
+    "pydantic",
+    "crewai-tools[mcp]>=1.14.7",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.crewai]
+type = "crew"

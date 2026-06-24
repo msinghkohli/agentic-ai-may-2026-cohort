@@ -1,0 +1,85 @@
+{
+  "doc_name": "repair_service_policy.pdf",
+  "structure": [
+    {
+      "title": "**Orange Electronics Repair & Service** **Policy**",
+      "start_index": 1,
+      "end_index": 137,
+      "node_id": "0000",
+      "nodes": [
+        {
+          "title": "**1. Service Types**",
+          "start_index": 11,
+          "end_index": 33,
+          "node_id": "0001",
+          "nodes": [
+            {
+              "title": "**1.1 Doorstep Service (Home Pickup & Delivery)**",
+              "start_index": 12,
+              "end_index": 27,
+              "node_id": "0002"
+            },
+            {
+              "title": "**1.2 Carry-In Service**",
+              "start_index": 28,
+              "end_index": 33,
+              "node_id": "0003"
+            }
+          ]
+        },
+        {
+          "title": "**2. Warranty & Cost Coverage**",
+          "start_index": 34,
+          "end_index": 67,
+          "node_id": "0004",
+          "nodes": [
+            {
+              "title": "**2.1 Standard Warranty Coverage**",
+              "start_index": 35,
+              "end_index": 46,
+              "node_id": "0005"
+            },
+            {
+              "title": "**2.2 Exclusions & Physical Damage**",
+              "start_index": 47,
+              "end_index": 67,
+              "node_id": "0006"
+            }
+          ]
+        },
+        {
+          "title": "**3. Data Protection & Privacy**",
+          "start_index": 68,
+          "end_index": 98,
+          "node_id": "0007",
+          "nodes": [
+            {
+              "title": "**3.1 Data Privacy During Repair**",
+              "start_index": 73,
+              "end_index": 83,
+              "node_id": "0008"
+            },
+            {
+              "title": "**3.2 Data Loss Disclaimer**",
+              "start_index": 84,
+              "end_index": 98,
+              "node_id": "0009"
+            }
+          ]
+        },
+        {
+          "title": "**4. The Repair Process**",
+          "start_index": 99,
+          "end_index": 115,
+          "node_id": "0010"
+        },
+        {
+          "title": "**5. 90-Day Service Warranty**",
+          "start_index": 116,
+          "end_index": 137,
+          "node_id": "0011"
+        }
+      ]
+    }
+  ]
+}

@@ -18,9 +18,9 @@
 
 **Purpose**: Project folder setup and workspace dependency configuration.
 
-- [ ] T001 Create project folders under `session7/2.a2a_jira_support/src/` including `jira_management`, `jira_server`, `support_agent`, and `documents` directories
-- [ ] T002 Initialize project dependencies (`pageindex-open`, `fastapi`, `uvicorn`, `streamlit`, `crewai[a2a]`, `pypdf`, `deepeval`) in `session7/2.a2a_jira_support/pyproject.toml`
-- [ ] T003 [P] Copy `repair_service_policy.pdf` and `product_lineup_specifications.pdf` to the `session7/2.a2a_jira_support/documents/` folder
+- [x] T001 Create project folders under `session7/2.a2a_jira_support/src/` including `jira_management`, `jira_server`, `support_agent`, and `documents` directories
+- [x] T002 Initialize project dependencies (`pageindex-open`, `fastapi`, `uvicorn`, `streamlit`, `crewai[a2a]`, `pypdf`, `deepeval`) in `session7/2.a2a_jira_support/pyproject.toml`
+- [x] T003 [P] Copy `repair_service_policy.pdf` and `product_lineup_specifications.pdf` to the `session7/2.a2a_jira_support/documents/` folder
 
 ---
 
@@ -28,7 +28,7 @@
 
 **Purpose**: Common configuration settings and imports.
 
-- [ ] T004 Setup environment configs and constant variables (model IDs, ports, API tokens) in `session7/2.a2a_jira_support/src/config.py`
+- [x] T004 Setup environment configs and constant variables (model IDs, ports, API tokens) in `session7/2.a2a_jira_support/src/config.py`
 
 ---
 
@@ -40,10 +40,10 @@
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] Copy the exact Jira Management code from `session4/2.jira_management/src/jiramanagement/` to `session7/2.a2a_jira_support/src/jira_management/`
-- [ ] T006 [US1] Implement the A2A server wrapper using `crewai.a2a.A2AServerConfig` in `session7/2.a2a_jira_support/src/jira_server/server.py`
-- [ ] T007 [US1] Add static Bearer Token authentication middleware to validate the `Authorization: Bearer OrangeJiraToken` header in `session7/2.a2a_jira_support/src/jira_server/server.py`
-- [ ] T008 [US1] Set up Confident AI tracing instrumentation calling `instrument_crewai()` and configuring OpenTelemetry middleware in `session7/2.a2a_jira_support/src/jira_server/server.py` to automatically extract the incoming `traceparent` header and link child spans to the parent Support Agent trace.
+- [x] T005 [US1] Copy the exact Jira Management code from `session4/2.jira_management/src/jiramanagement/` to `session7/2.a2a_jira_support/src/jira_management/`
+- [x] T006 [US1] Implement the A2A server wrapper using `crewai.a2a.A2AServerConfig` in `session7/2.a2a_jira_support/src/jira_server/server.py`
+- [x] T007 [US1] Add static Bearer Token authentication middleware to validate the `Authorization: Bearer OrangeJiraToken` header in `session7/2.a2a_jira_support/src/jira_server/server.py`
+- [x] T008 [US1] Set up Confident AI tracing instrumentation calling `instrument_crewai()` and configuring OpenTelemetry middleware in `session7/2.a2a_jira_support/src/jira_server/server.py` to automatically extract the incoming `traceparent` header and link child spans to the parent Support Agent trace.
 
 **Checkpoint**: At this point, the Jira A2A server can be started on port `8001` and queried independently.
 
@@ -57,9 +57,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T009 [US2] Define the Support Agent crew and task instructions in `session7/2.a2a_jira_support/src/support_agent/agent.py`
-- [ ] T010 [US2] Configure the Support Agent's native A2A client integration using `A2AClientConfig` pointing to the Jira server endpoint and presenting the Bearer token in `session7/2.a2a_jira_support/src/support_agent/agent.py`
-- [ ] T011 [US2] Wrap the Support Agent kickoff in a Confident AI tracing context using `with trace(...)` in `session7/2.a2a_jira_support/src/support_agent/agent.py`, ensuring that the OpenTelemetry client context propagates the `traceparent` header to downstream HTTP A2A calls.
+- [x] T009 [US2] Define the Support Agent crew and task instructions in `session7/2.a2a_jira_support/src/support_agent/agent.py`
+- [x] T010 [US2] Configure the Support Agent's native A2A client integration using `A2AClientConfig` pointing to the Jira server endpoint and presenting the Bearer token in `session7/2.a2a_jira_support/src/support_agent/agent.py`
+- [x] T011 [US2] Wrap the Support Agent kickoff in a Confident AI tracing context using `with trace(...)` in `session7/2.a2a_jira_support/src/support_agent/agent.py`, ensuring that the OpenTelemetry client context propagates the `traceparent` header to downstream HTTP A2A calls.
 
 **Checkpoint**: The Support Agent can successfully communicate with the Jira Management A2A server to resolve ticket queries.
 
@@ -73,9 +73,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T012 [P] [US3] Implement the PageIndex indexing and search utility (`PageIndexTool` using `pageindex_open.PIO`) in `session7/2.a2a_jira_support/src/tools.py`
-- [ ] T013 [US3] Wire the PageIndex search tool into the Support Agent definition inside `session7/2.a2a_jira_support/src/support_agent/agent.py`
-- [ ] T014 [US3] Build cached tree index files for the PDFs under `session7/2.a2a_jira_support/data/indexes/` by running the initialization script
+- [x] T012 [P] [US3] Implement the PageIndex indexing and search utility (`PageIndexTool` using `pageindex_open.PIO`) in `session7/2.a2a_jira_support/src/tools.py`
+- [x] T013 [US3] Wire the PageIndex search tool into the Support Agent definition inside `session7/2.a2a_jira_support/src/support_agent/agent.py`
+- [x] T014 [US3] Build cached tree index files for the PDFs under `session7/2.a2a_jira_support/data/indexes/` by running the initialization script
 
 **Checkpoint**: The Support Agent can answer both Jira-related and PDF-based policy queries.
 
@@ -85,9 +85,9 @@
 
 **Purpose**: User interface implementation, end-to-end validation, and cleanup.
 
-- [ ] T015 Implement the Streamlit interactive chat UI in `session7/2.a2a_jira_support/src/support_agent/app.py`
-- [ ] T016 Run all validation scenarios from `quickstart.md` and verify Confident AI trace logs
-- [ ] T017 Clean up unused code and update developer documentation in `session7/2.a2a_jira_support/README.md`, including setup, usage, and how to test the A2A server using a local A2A Inspector setup
+- [x] T015 Implement the Streamlit interactive chat UI in `session7/2.a2a_jira_support/src/support_agent/app.py`
+- [x] T016 Run all validation scenarios from `quickstart.md` and verify Confident AI trace logs
+- [x] T017 Clean up unused code and update developer documentation in `session7/2.a2a_jira_support/README.md`, including setup, usage, and how to test the A2A server using a local A2A Inspector setup
 
 ---
 

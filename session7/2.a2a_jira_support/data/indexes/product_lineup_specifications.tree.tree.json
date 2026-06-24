@@ -1,0 +1,61 @@
+{
+  "doc_name": "product_lineup_specifications.pdf",
+  "structure": [
+    {
+      "title": "**Orange Electronics: Product Lineup &** **Specifications**",
+      "start_index": 1,
+      "end_index": 200,
+      "node_id": "0000",
+      "nodes": [
+        {
+          "title": "**1. Smartphone Lineup: The Zest Series**",
+          "start_index": 5,
+          "end_index": 30,
+          "node_id": "0001"
+        },
+        {
+          "title": "**2. Computing Lineup: The Valencia Series**",
+          "start_index": 31,
+          "end_index": 60,
+          "node_id": "0002"
+        },
+        {
+          "title": "**3. Tablet Lineup: The Slice Series**",
+          "start_index": 61,
+          "end_index": 79,
+          "node_id": "0003"
+        },
+        {
+          "title": "**4. Wearables: The Pulse Collection**",
+          "start_index": 80,
+          "end_index": 120,
+          "node_id": "0004"
+        },
+        {
+          "title": "**6. Mixed Reality: Spectra**",
+          "start_index": 121,
+          "end_index": 131,
+          "node_id": "0005"
+        },
+        {
+          "title": "**7. Services & Software**",
+          "start_index": 132,
+          "end_index": 141,
+          "node_id": "0006"
+        },
+        {
+          "title": "**8. OrangeCare+ (Extended Coverage)**",
+          "start_index": 142,
+          "end_index": 158,
+          "node_id": "0007"
+        },
+        {
+          "title": "**9. The Vintage Orchard (Historical Products)**",
+          "start_index": 159,
+          "end_index": 200,
+          "node_id": "0008"
+        }
+      ]
+    }
+  ]
+}
